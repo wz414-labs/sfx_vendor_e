@@ -43,7 +43,7 @@ fi
 
 # If needed, migrate from the old SRC_DIR structure
 if [ -d "$SRC_DIR/.repo" ]; then
-  branch_dir=$(repo info -o | sed -ne 's/Manifest branch: refs\/heads\///p' | sed 's/[^[:alnum:]]/_/g')
+  branch_dir=$(repo info -o | sed -ne 's/Manifest merge branch: refs\/heads\///p' | sed 's/[^[:alnum:]]/_/g')
   branch_dir=${branch_dir^^}
   echo ">> [$(date)] WARNING: old source dir detected, moving source from \"\$SRC_DIR\" to \"\$SRC_DIR/$branch_dir\""
   if [ -d "$branch_dir" ] && [ -z "$(ls -A "$branch_dir")" ]; then
@@ -102,9 +102,9 @@ for branch in ${BRANCH_NAME//,/ }; do
 
     echo ">> [$(date)] (Re)initializing branch repository" | tee -a "$repo_log"
     if [ "$LOCAL_MIRROR" = true ]; then
-      yes | repo init -u https://github.com/LineageOS/android.git --reference "$MIRROR_DIR" -b "$branch" &>> "$repo_log"
+      yes | repo init -u "$REPO_URL" --reference "$MIRROR_DIR" -b "$branch" &>> "$repo_log"
     else
-      yes | repo init -u https://github.com/LineageOS/android.git -b "$branch" &>> "$repo_log"
+      yes | repo init -u "$REPO_URL" -b "$branch" &>> "$repo_log"
     fi
 
     # Copy local manifests to the appropriate folder in order take them into consideration
@@ -121,7 +121,7 @@ for branch in ${BRANCH_NAME//,/ }; do
       elif [[ $branch =~ .*lineage-15\.1.* ]]; then
         themuppets_branch=lineage-15.1
       else
-        themuppets_branch=lineage-15.1
+        themuppets_branch=cm-14.1
         echo ">> [$(date)] Can't find a matching branch on github.com/TheMuppets, using $themuppets_branch"
       fi
 
@@ -405,4 +405,3 @@ if [ -f /root/userscripts/end.sh ]; then
   echo ">> [$(date)] Running end.sh"
   /root/userscripts/end.sh
 fi
-

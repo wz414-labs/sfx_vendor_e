@@ -40,6 +40,7 @@ The two fundamental settings are (default value in brackets):
 
  * `BRANCH_NAME (cm-14.1)`: LineageOS branch, see the branch list [here](https://github.com/LineageOS/android_vendor_cm/branches)
  * `DEVICE_LIST`: comma-separated list of devices to build
+ * `REPO_URL (https://github.com/LineageOS/android.git)`: LineageOS repo use for build
 
 Running a build with only these two set will create a ZIP file almost identical
 to the LineageOS official builds, just signed with the test keys.
@@ -267,4 +268,3 @@ docker run \
     -v "/home/user/manifests:/srv/local_manifests" \
     lineageos4microg/docker-lineage-cicd
 ```
-

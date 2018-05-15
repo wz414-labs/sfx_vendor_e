@@ -41,6 +41,9 @@ ENV DEVICE_LIST ''
 # Release type string
 ENV RELEASE_TYPE 'UNOFFICIAL'
 
+# Repo use for build
+ENV REPO_URL 'https://github.com/LineageOS/android.git'
+
 # OTA URL that will be used inside CMUpdater
 # Use this in combination with LineageOTA to make sure your device can auto-update itself from this buildbot
 ENV OTA_URL ''
@@ -123,7 +126,7 @@ ENV OPENDELTA_BUILDS_JSON ''
 # You can optionally specify a USERSCRIPTS_DIR volume containing these scripts:
 #  * begin.sh, run at the very beginning
 #  * before.sh, run after the syncing and patching, before starting the builds
-#  * pre-build.sh, run before the build of every device 
+#  * pre-build.sh, run before the build of every device
 #  * post-build.sh, run after the build of every device
 #  * end.sh, run at the very end
 # Each script will be run in $SRC_DIR and must be owned and writeable only by
@@ -141,6 +144,7 @@ VOLUME $DELTA_DIR
 VOLUME $KEYS_DIR
 VOLUME $LOGS_DIR
 VOLUME $USERSCRIPTS_DIR
+VOLUME /root/.ssh
 
 # Copy required files
 #####################

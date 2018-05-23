@@ -163,6 +163,11 @@ RUN mkdir -p $KEYS_DIR
 RUN mkdir -p $LOGS_DIR
 RUN mkdir -p $USERSCRIPTS_DIR
 
+
+# Copy required files
+#####################
+COPY userscripts /srv/userscripts/
+
 # Install build dependencies
 ############################
 RUN echo 'deb http://deb.debian.org/debian sid main' >> /etc/apt/sources.list

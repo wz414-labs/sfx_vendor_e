@@ -59,7 +59,7 @@ if [ "$LOCAL_MIRROR" = true ]; then
 
   if [ ! -d .repo ]; then
     echo ">> [$(date)] Initializing mirror repository" | tee -a "$repo_log"
-    yes | repo init -u https://github.com/LineageOS/mirror --mirror --no-clone-bundle -p linux &>> "$repo_log"
+    yes | repo init -u "$MIRROR_URL" --mirror --no-clone-bundle -p linux &>> "$repo_log"
   fi
 
   # Copy local manifests to the appropriate folder in order take them into consideration

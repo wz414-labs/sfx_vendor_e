@@ -44,6 +44,9 @@ ENV RELEASE_TYPE 'UNOFFICIAL'
 # Repo use for build
 ENV REPO_URL 'https://github.com/LineageOS/android.git'
 
+# Repo use for build
+ENV MIRROR_URL 'https://github.com/LineageOS/mirror'
+
 # OTA URL that will be used inside CMUpdater
 # Use this in combination with LineageOTA to make sure your device can auto-update itself from this buildbot
 ENV OTA_URL ''

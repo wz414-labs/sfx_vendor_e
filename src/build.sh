@@ -59,7 +59,7 @@ if [ "$LOCAL_MIRROR" = true ]; then
 
   if [ ! -d .repo ]; then
     echo ">> [$(date)] Initializing mirror repository" | tee -a "$repo_log"
-    yes | repo init -u "$MIRROR_URL" --mirror --no-clone-bundle -p linux &>> "$repo_log"
+    yes | repo init -u "$MIRROR" --mirror --no-clone-bundle -p linux &>> "$repo_log"
   fi
 
   # Copy local manifests to the appropriate folder in order take them into consideration
@@ -102,9 +102,9 @@ for branch in ${BRANCH_NAME//,/ }; do
 
     echo ">> [$(date)] (Re)initializing branch repository" | tee -a "$repo_log"
     if [ "$LOCAL_MIRROR" = true ]; then
-      yes | repo init -u "$REPO_URL" --reference "$MIRROR_DIR" -b "$branch" &>> "$repo_log"
+      yes | repo init -u "$REPO" --reference "$MIRROR_DIR" -b "$branch" &>> "$repo_log"
     else
-      yes | repo init -u "$REPO_URL" -b "$branch" &>> "$repo_log"
+      yes | repo init -u "$REPO" -b "$branch" &>> "$repo_log"
     fi
 
     # Copy local manifests to the appropriate folder in order take them into consideration

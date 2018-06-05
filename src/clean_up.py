@@ -24,7 +24,7 @@ from datetime import datetime
 from argparse import ArgumentParser
 
 
-ROM_NAME = "lineage"
+ROM_NAME = "eelo"
 
 def clean_path(path, builds_to_keep, current_version, old_builds_to_keep,
                current_codename):

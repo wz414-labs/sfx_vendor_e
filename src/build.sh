@@ -118,6 +118,9 @@ for branch in ${BRANCH_NAME//,/ }; do
         themuppets_branch=cm-13.0
       elif [[ $branch =~ .*cm-14\.1.* ]]; then
         themuppets_branch=cm-14.1
+      elif [[ $branch =~ .*eelo-0\.1.* ]]; then
+        themuppets_branch=cm-14.1
+        echo ">> [$(date)] eelo v0.1 use branch $themuppets_branch on github.com/TheMuppets"
       elif [[ $branch =~ .*lineage-15\.1.* ]]; then
         themuppets_branch=lineage-15.1
       else

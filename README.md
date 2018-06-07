@@ -40,7 +40,8 @@ The two fundamental settings are (default value in brackets):
 
  * `BRANCH_NAME (cm-14.1)`: LineageOS branch, see the branch list [here](https://github.com/LineageOS/android_vendor_cm/branches)
  * `DEVICE_LIST`: comma-separated list of devices to build
- * `REPO_URL (https://github.com/LineageOS/android.git)`: LineageOS repo use for build
+ * `REPO (https://github.com/LineageOS/android.git)`: LineageOS repo use for build
+
 
 Running a build with only these two set will create a ZIP file almost identical
 to the LineageOS official builds, just signed with the test keys.
@@ -113,6 +114,7 @@ Other useful settings are:
  * `RELEASE_TYPE (UNOFFICIAL)`: change the release type of your builds
  * `BUILD_OVERLAY (false)`: normally each build is done on the source tree, then the tree is cleaned with `mka clean`. If you want to be sure that each build is isolated from the others, set `BUILD_OVERLAY` to `true` (longer build time). Requires `--cap-add=SYS_ADMIN`.
  * `LOCAL_MIRROR (false)`: change this to `true` if you want to create a local mirror of the LineageOS source (> 200 GB)
+ * `MIRROR (https://github.com/LineageOS/mirror)`: Repo used for mirror
  * `CRONTAB_TIME (now)`: instead of building immediately and exit, build at the specified time (uses standard cron format)
 
 ## Volumes

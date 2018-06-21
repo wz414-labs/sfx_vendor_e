@@ -53,6 +53,8 @@ if [ -d "$SRC_DIR/.repo" ]; then
   find . -maxdepth 1 ! -name "$branch_dir" ! -path . -exec mv {} "$branch_dir" \;
 fi
 
+sync_successful=true
+
 if [ "$LOCAL_MIRROR" = true ]; then
 
   cd "$MIRROR_DIR"
@@ -74,6 +76,10 @@ if [ "$LOCAL_MIRROR" = true ]; then
 
   echo ">> [$(date)] Syncing mirror repository" | tee -a "$repo_log"
   repo sync --force-sync --no-clone-bundle &>> "$repo_log"
+
+  if [ $? != 0 ]; then
+    sync_successful=false
+  fi
 fi
 
 for branch in ${BRANCH_NAME//,/ }; do
@@ -134,6 +140,10 @@ for branch in ${BRANCH_NAME//,/ }; do
     echo ">> [$(date)] Syncing branch repository" | tee -a "$repo_log"
     builddate=$(date +%Y%m%d)
     repo sync -c --force-sync &>> "$repo_log"
+
+    if [ $? != 0 ]; then
+      sync_successful=false
+    fi
 
     android_version=$(sed -n -e 's/^\s*PLATFORM_VERSION\.OPM1 := //p' build/core/version_defaults.mk)
     if [ -z $android_version ]; then
@@ -259,11 +269,19 @@ for branch in ${BRANCH_NAME//,/ }; do
             echo ">> [$(date)] Syncing mirror repository" | tee -a "$repo_log"
             cd "$MIRROR_DIR"
             repo sync --force-sync --no-clone-bundle &>> "$repo_log"
+
+            if [ $? != 0 ]; then
+              sync_successful=false
+            fi
           fi
 
           echo ">> [$(date)] Syncing branch repository" | tee -a "$repo_log"
           cd "$SRC_DIR/$branch_dir"
           repo sync -c --force-sync &>> "$repo_log"
+
+          if [ $? != 0 ]; then
+            sync_successful=false
+          fi
         fi
 
         if [ "$BUILD_OVERLAY" = true ]; then
@@ -407,4 +425,8 @@ fi
 if [ -f /root/userscripts/end.sh ]; then
   echo ">> [$(date)] Running end.sh"
   /root/userscripts/end.sh
+fi
+
+if [ "$build_successful" = false ] || [ "$sync_successful" = false ]; then
+  exit 1
 fi

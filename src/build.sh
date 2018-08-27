@@ -71,7 +71,7 @@ if [ "$LOCAL_MIRROR" = true ]; then
 
   rm -f .repo/local_manifests/proprietary.xml
   if [ "$INCLUDE_PROPRIETARY" = true ]; then
-    wget -q -O .repo/local_manifests/proprietary.xml "https://raw.githubusercontent.com/TheMuppets/manifests/mirror/default.xml"
+    wget -q -O .repo/local_manifests/proprietary.xml --header 'PRIVATE-TOKEN: $PRIVATE_TOKEN' 'https://gitlab.eelo.io/api/v4/projects/90/repository/files/default%2Exml/raw?ref=mirror'
   fi
 
   echo ">> [$(date)] Syncing mirror repository" | tee -a "$repo_log"

@@ -7,6 +7,6 @@ build_image:
   services:
     - docker:dind
   script:
-    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.eelo.io:5000
-    - docker build -t registry.gitlab.eelo.io:5000/e/os/docker-lineage-cicd .
-    - docker push registry.gitlab.eelo.io:5000/e/os/docker-lineage-cicd:latest
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.e.foundation:5000
+    - docker build -t registry.gitlab.e.foundation:5000/e/os/docker-lineage-cicd .
+    - docker push registry.gitlab.e.foundation:5000/e/os/docker-lineage-cicd:latest

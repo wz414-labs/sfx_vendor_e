@@ -261,6 +261,7 @@ for branch in ${BRANCH_NAME//,/ }; do
     fi
 
     for codename in ${devices//,/ }; do
+      build_device=true
       if ! [ -z "$codename" ]; then
 
         currentdate=$(date +%Y%m%d)
@@ -275,6 +276,7 @@ for branch in ${BRANCH_NAME//,/ }; do
 
             if [ $? != 0 ]; then
               sync_successful=false
+              build_device=false
             fi
           fi
 
@@ -284,6 +286,7 @@ for branch in ${BRANCH_NAME//,/ }; do
 
           if [ $? != 0 ]; then
             sync_successful=false
+            build_device=false
           fi
         fi
 
@@ -314,6 +317,15 @@ for branch in ${BRANCH_NAME//,/ }; do
         if [ -f /root/userscripts/pre-build.sh ]; then
           echo ">> [$(date)] Running pre-build.sh for $codename" >> "$DEBUG_LOG"
           /root/userscripts/pre-build.sh $codename &>> "$DEBUG_LOG"
+
+          if [ $? != 0 ]; then
+            build_device=false
+          fi
+        fi
+
+        if [ "$build_device" = false ]; then
+          echo ">> [$(date)] No build for $codename" >> "$DEBUG_LOG"
+          continue
         fi
 
         # Start the build

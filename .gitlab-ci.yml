@@ -3,6 +3,7 @@ stages:
 
 variables:
   REVISION: "latest"
+  DOCKER_DRIVER: overlay2
 
 build_image:
   stage: build

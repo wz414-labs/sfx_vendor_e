@@ -168,17 +168,21 @@ RUN mkdir -p $USERSCRIPTS_DIR
 
 # Install build dependencies
 ############################
+COPY apt_preferences /etc/apt/preferences
+RUN apt-get -qq update
+RUN apt-get install -y imagemagick libwxgtk3.0-dev openjdk-8-jdk
+
 RUN echo 'deb http://deb.debian.org/debian sid main' >> /etc/apt/sources.list
 RUN echo 'deb http://deb.debian.org/debian experimental main' >> /etc/apt/sources.list
-COPY apt_preferences /etc/apt/preferences
 RUN apt-get -qq update
 RUN apt-get -qqy upgrade
 
-RUN apt-get install -y bc bison bsdmainutils build-essential ccache cgpt cron \
-      curl flex g++-multilib gcc-multilib git gnupg gperf imagemagick \
+RUN apt-get install -y openjdk-7-jdk
+RUN apt-get install -f -y bc bison bsdmainutils build-essential ccache cgpt cron \
+      curl flex g++-multilib gcc-multilib git gnupg gperf \
       lib32ncurses5-dev lib32readline-dev lib32z1-dev libesd0-dev liblz4-tool \
-      libncurses5-dev libsdl1.2-dev libssl-dev libwxgtk3.0-dev libxml2 \
-      libxml2-utils lsof lzop maven openjdk-7-jdk openjdk-8-jdk pngcrush \
+      libncurses5-dev libsdl1.2-dev libssl-dev libxml2 \
+      libxml2-utils lsof lzop maven pngcrush \
       procps python rsync schedtool squashfs-tools wget xdelta3 xsltproc yasm \
       zip zlib1g-dev
 

@@ -313,7 +313,6 @@ for branch in ${BRANCH_NAME//,/ }; do
         fi
 
         DEBUG_LOG="$LOGS_DIR/$logsubdir/eelo-$los_ver-$builddate-$RELEASE_TYPE-$codename.log"
-        export DEBUG_LOG
 
         if [ -f /root/userscripts/pre-build.sh ]; then
           echo ">> [$(date)] Running pre-build.sh for $codename" >> "$DEBUG_LOG"

@@ -36,21 +36,9 @@ fi
 # Treat DEVICE_LIST as DEVICE_LIST_<first_branch>
 first_branch=$(cut -d ',' -f 1 <<< "$BRANCH_NAME")
 if [ -n "$DEVICE_LIST" ]; then
-  device_list_first_branch="DEVICE_LIST_$(sed 's/[^[:alnum:]]/_/g' <<< $first_branch)"
+  device_list_first_branch="DEVICE_LIST_$(sed 's/.*-\([a-zA-Z]*\)$/\1/' <<< $first_branch)"
   device_list_first_branch=${device_list_first_branch^^}
   read $device_list_first_branch <<< "$DEVICE_LIST,${!device_list_first_branch}"
-fi
-
-# If needed, migrate from the old SRC_DIR structure
-if [ -d "$SRC_DIR/.repo" ]; then
-  branch_dir=$(repo info -o | sed -ne 's/Manifest merge branch: refs\/heads\///p' | sed 's/[^[:alnum:]]/_/g')
-  branch_dir=${branch_dir^^}
-  echo ">> [$(date)] WARNING: old source dir detected, moving source from \"\$SRC_DIR\" to \"\$SRC_DIR/$branch_dir\""
-  if [ -d "$branch_dir" ] && [ -z "$(ls -A "$branch_dir")" ]; then
-    echo ">> [$(date)] ERROR: $branch_dir already exists and is not empty; aborting"
-  fi
-  mkdir -p "$branch_dir"
-  find . -maxdepth 1 ! -name "$branch_dir" ! -path . -exec mv {} "$branch_dir" \;
 fi
 
 sync_successful=true
@@ -83,7 +71,7 @@ if [ "$LOCAL_MIRROR" = true ]; then
 fi
 
 for branch in ${BRANCH_NAME//,/ }; do
-  branch_dir=$(sed 's/[^[:alnum:]]/_/g' <<< $branch)
+  branch_dir=$(sed 's/.*-\([a-zA-Z]*\)$/\1/' <<< $branch)
   branch_dir=${branch_dir^^}
   device_list_cur_branch="DEVICE_LIST_$branch_dir"
   devices=${!device_list_cur_branch}

@@ -108,18 +108,12 @@ for branch in ${BRANCH_NAME//,/ }; do
 
     rm -f .repo/local_manifests/proprietary.xml
     if [ "$INCLUDE_PROPRIETARY" = true ]; then
-      if [[ $branch =~ .*cm\-13\.0.* ]]; then
-        themuppets_branch=cm-13.0
-      elif [[ $branch =~ .*cm-14\.1.* ]]; then
+      if [[ $branch =~ nougat$ ]]; then
         themuppets_branch=cm-14.1
-      elif [[ $branch =~ .*eelo-0\.1.* ]]; then
-        themuppets_branch=cm-14.1
-        echo ">> [$(date)] eelo v0.1 use branch $themuppets_branch on github.com/TheMuppets"
-      elif [[ $branch =~ .*eelo-0\.2.* ]]; then
+        echo ">> [$(date)] Use branch $themuppets_branch on github.com/TheMuppets"
+      elif [[ $branch =~ oreo$ ]]; then
         themuppets_branch=lineage-15.1
-        echo ">> [$(date)] eelo v0.2 use branch $themuppets_branch on github.com/TheMuppets"
-      elif [[ $branch =~ .*lineage-15\.1.* ]]; then
-        themuppets_branch=lineage-15.1
+        echo ">> [$(date)] Use branch $themuppets_branch on github.com/TheMuppets"
       else
         themuppets_branch=cm-14.1
         echo ">> [$(date)] Can't find a matching branch on github.com/TheMuppets, using $themuppets_branch"

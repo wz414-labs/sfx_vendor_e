@@ -313,6 +313,7 @@ for branch in ${BRANCH_NAME//,/ }; do
         # Start the build
         echo ">> [$(date)] Starting build for $codename, $branch branch" | tee -a "$DEBUG_LOG"
         build_successful=false
+        echo "ANDROID_JACK_VM_ARGS=${ANDROID_JACK_VM_ARGS}"
         if brunch $codename &>> "$DEBUG_LOG"; then
           currentdate=$(date +%Y%m%d)
           if [ "$builddate" != "$currentdate" ]; then

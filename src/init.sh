@@ -3,7 +3,7 @@
 # Docker init script
 # Copyright (c) 2017 Julian Xhokaxhiu
 # Copyright (C) 2017-2018 Nicola Corna <nicola@corna.info>
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -55,6 +55,15 @@ if [ "$SIGN_BUILDS" = true ]; then
       ln -s releasekey.$e "$KEYS_DIR/$c.$e" 2> /dev/null
     done
   done
+fi
+
+# Define memory to use for jack (depending of runner tag)
+jack_memory=$(echo ${CI_RUNNER_TAGS} | grep GB | sed 's/.* \([0-9]*GB\).*/\1/')
+if [ -n ${jack_memory} ]
+then
+  ANDROID_JACK_VM_ARGS="-Dfile.encoding=UTF-8 -XX:+TieredCompilation -Xmx"${jack_memory}
+  export ANDROID_JACK_VM_ARGS
+  echo "ANDROID_JACK_VM_ARGS set to ${ANDROID_JACK_VM_ARGS}"
 fi
 
 if [ "$CRONTAB_TIME" = "now" ]; then

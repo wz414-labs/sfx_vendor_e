@@ -59,6 +59,7 @@ fi
 
 # Define memory to use for jack (depending of runner tag)
 if [ -n ${CI_RUNNER_TAGS} ]
+then
   jack_memory=$(echo ${CI_RUNNER_TAGS} | grep GB | sed 's/.* \([0-9]*GB\).*/\1/')
   if [ -n ${jack_memory} ]
   then

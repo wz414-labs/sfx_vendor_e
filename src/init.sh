@@ -58,12 +58,14 @@ if [ "$SIGN_BUILDS" = true ]; then
 fi
 
 # Define memory to use for jack (depending of runner tag)
-jack_memory=$(echo ${CI_RUNNER_TAGS} | grep GB | sed 's/.* \([0-9]*GB\).*/\1/')
-if [ -n ${jack_memory} ]
-then
-  ANDROID_JACK_VM_ARGS="-Dfile.encoding=UTF-8 -XX:+TieredCompilation -Xmx"${jack_memory}
-  export ANDROID_JACK_VM_ARGS
-  echo "ANDROID_JACK_VM_ARGS set to ${ANDROID_JACK_VM_ARGS}"
+if [ -n ${CI_RUNNER_TAGS} ]
+  jack_memory=$(echo ${CI_RUNNER_TAGS} | grep GB | sed 's/.* \([0-9]*GB\).*/\1/')
+  if [ -n ${jack_memory} ]
+  then
+    ANDROID_JACK_VM_ARGS="-Dfile.encoding=UTF-8 -XX:+TieredCompilation -Xmx"${jack_memory}
+    export ANDROID_JACK_VM_ARGS
+    echo "ANDROID_JACK_VM_ARGS set to ${ANDROID_JACK_VM_ARGS}"
+  fi
 fi
 
 if [ "$CRONTAB_TIME" = "now" ]; then

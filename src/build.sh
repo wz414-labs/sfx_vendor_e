@@ -114,7 +114,7 @@ for branch in ${BRANCH_NAME//,/ }; do
       elif [[ $branch =~ oreo$ ]]; then
         themuppets_branch=lineage-15.1
         echo ">> [$(date)] Use branch $themuppets_branch on github.com/TheMuppets"
-      elif [[ $branch =~ oreo$ ]]; then
+      elif [[ $branch =~ pie$ ]]; then
         themuppets_branch=lineage-16.0
         echo ">> [$(date)] Use branch $themuppets_branch on github.com/TheMuppets"
       else

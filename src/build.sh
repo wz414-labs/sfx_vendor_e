@@ -114,11 +114,13 @@ for branch in ${BRANCH_NAME//,/ }; do
       elif [[ $branch =~ oreo$ ]]; then
         themuppets_branch=lineage-15.1
         echo ">> [$(date)] Use branch $themuppets_branch on github.com/TheMuppets"
+      elif [[ $branch =~ oreo$ ]]; then
+        themuppets_branch=lineage-16.0
+        echo ">> [$(date)] Use branch $themuppets_branch on github.com/TheMuppets"
       else
         themuppets_branch=cm-14.1
         echo ">> [$(date)] Can't find a matching branch on github.com/TheMuppets, using $themuppets_branch"
       fi
-
       wget -q -O .repo/local_manifests/proprietary.xml "https://raw.githubusercontent.com/TheMuppets/manifests/$themuppets_branch/muppets.xml"
     fi
 
@@ -132,7 +134,14 @@ for branch in ${BRANCH_NAME//,/ }; do
 
     android_version=$(sed -n -e 's/^\s*PLATFORM_VERSION\.OPM1 := //p' build/core/version_defaults.mk)
     if [ -z $android_version ]; then
-      android_version=$(sed -n -e 's/^\s*PLATFORM_VERSION := //p' build/core/version_defaults.mk)
+      android_version=$(sed -n -e 's/^\s*PLATFORM_VERSION\.PPR1 := //p' build/core/version_defaults.mk)
+      if [ -z $android_version ]; then
+        android_version=$(sed -n -e 's/^\s*PLATFORM_VERSION := //p' build/core/version_defaults.mk)
+        if [ -z $android_version ]; then
+          echo ">> [$(date)] Can't detect the android version"
+          exit 1
+        fi
+      fi
     fi
     android_version_major=$(cut -d '.' -f 1 <<< $android_version)
 
@@ -165,6 +174,7 @@ for branch in ${BRANCH_NAME//,/ }; do
         6.*  )    patch_name="android_frameworks_base-M.patch" ;;
         7.*  )    patch_name="android_frameworks_base-N.patch" ;;
         8.*  )    patch_name="android_frameworks_base-O.patch" ;;
+	      9*  )    patch_name="android_frameworks_base-P.patch" ;; #not sure why 9 not 9.0 but here's a fix that will work until android 90
       esac
 
       if ! [ -z $patch_name ]; then
@@ -218,7 +228,9 @@ for branch in ${BRANCH_NAME//,/ }; do
 
     if [ "$SIGN_BUILDS" = true ]; then
       echo ">> [$(date)] Adding keys path ($KEYS_DIR)"
-      sed -i "1s;^;PRODUCT_DEFAULT_DEV_CERTIFICATE := $KEYS_DIR/releasekey\nPRODUCT_OTA_PUBLIC_KEYS := $KEYS_DIR/releasekey\nPRODUCT_EXTRA_RECOVERY_KEYS := $KEYS_DIR/releasekey\n\n;" "vendor/$vendor/config/common.mk"
+      # Soong (Android 9+) complains if the signing keys are outside the build path
+      ln -sf "$KEYS_DIR" user-keys
+      sed -i "1s;^;PRODUCT_DEFAULT_DEV_CERTIFICATE := user-keys/releasekey\nPRODUCT_OTA_PUBLIC_KEYS := user-keys/releasekey\nPRODUCT_EXTRA_RECOVERY_KEYS := user-keys/releasekey\n\n;" "vendor/$vendor/config/common.mk"
     fi
 
     if [ "$android_version_major" -ge "7" ]; then

@@ -15,10 +15,12 @@ variables:
     - "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.e.foundation:5000"
     - "docker build --cache-from $CONTAINER_IMAGE:$IMAGE_TAG -t $CONTAINER_IMAGE -t $CONTAINER_IMAGE:$IMAGE_TAG ."
     - "docker push $CONTAINER_IMAGE:$IMAGE_TAG"
-    - 'if [ "${CI_COMMIT_REF_NAME}" = master ] ; then docker push $CONTAINER_IMAGE:latest ; $CONTAINER_IMAGE:$IMAGE_TAG_RELEASE ; fi'
+    - 'if [ "${CI_COMMIT_REF_NAME}" = master ] ; then docker-push $CONTAINER_IMAGE:$IMAGE_TAG_RELEASE ; fi'
 
 build_prod:
   extends: .build_image
+  post_script:
+    - 'if [ "${CI_COMMIT_REF_NAME}" = master ] ; then docker push $CONTAINER_IMAGE:latest ; fi'
   variables:
     IMAGE_TAG: $CI_COMMIT_REF_NAME
     IMAGE_TAG_RELEASE: prod

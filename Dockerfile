@@ -1,12 +1,10 @@
-FROM debian:stretch
+FROM debian:buster
 MAINTAINER Nicola Corna <nicola@corna.info>
 
 # Environment variables
 #######################
 
-ENV MIRROR_DIR /srv/mirror
 ENV SRC_DIR /srv/src
-ENV TMP_DIR /srv/tmp
 ENV CCACHE_DIR /srv/ccache
 ENV ZIP_DIR /srv/zips
 ENV LMANIFEST_DIR /srv/local_manifests
@@ -30,40 +28,27 @@ ENV USE_CCACHE 1
 # for no limit.
 ENV CCACHE_SIZE 50G
 
-# Environment for the LineageOS branches name
+# Environment for the /e/ branches name
 # See https://github.com/LineageOS/android_vendor_cm/branches for possible options
-ENV BRANCH_NAME 'cm-14.1'
+ENV BRANCH_NAME 'v1-pie'
 
-# Environment for the device list (separate by comma if more than one)
-# eg. DEVICE_LIST=hammerhead,bullhead,angler
-ENV DEVICE_LIST ''
+# Environment for the device
+# eg. DEVICE=hammerhead
+ENV DEVICE ''
 
 # Release type string
 ENV RELEASE_TYPE 'UNOFFICIAL'
 
 # Repo use for build
-ENV REPO 'https://github.com/LineageOS/android.git'
-
-# Repo use for build
-ENV MIRROR 'https://github.com/LineageOS/mirror'
-
-# OTA URL that will be used inside CMUpdater
-# Use this in combination with LineageOTA to make sure your device can auto-update itself from this buildbot
-ENV OTA_URL ''
+ENV REPO 'https://gitlab.e.foundation/e/os/android.git'
 
 # User identity
-ENV USER_NAME 'LineageOS Buildbot'
-ENV USER_MAIL 'lineageos-buildbot@docker.host'
+ENV USER_NAME '/e/ robot'
+ENV USER_MAIL 'erobot@e.email'
 
 # Include proprietary files, downloaded automatically from github.com/TheMuppets/
 # Only some branches are supported
 ENV INCLUDE_PROPRIETARY true
-
-# Mount an overlay filesystem over the source dir to do each build on a clean source
-ENV BUILD_OVERLAY false
-
-# Clone the full LineageOS mirror (> 200 GB)
-ENV LOCAL_MIRROR false
 
 # If you want to preserve old ZIPs set this to 'false'
 ENV CLEAN_OUTDIR false
@@ -75,9 +60,6 @@ ENV CRONTAB_TIME 'now'
 
 # Clean artifacts output after each build
 ENV CLEAN_AFTER_BUILD true
-
-# Provide root capabilities builtin inside the ROM (see http://lineageos.org/Update-and-Build-Prep/)
-ENV WITH_SU false
 
 # Provide a default JACK configuration in order to avoid out-of-memory issues
 ENV ANDROID_JACK_VM_ARGS "-Dfile.encoding=UTF-8 -XX:+TieredCompilation -Xmx4G"
@@ -96,17 +78,6 @@ ENV ZIP_SUBDIR true
 
 # Write the verbose logs to $LOGS_DIR/$codename instead of $LOGS_DIR/
 ENV LOGS_SUBDIR true
-
-# Apply the MicroG's signature spoofing patch
-# Valid values are "no", "yes" (for the original MicroG's patch) and
-# "restricted" (to grant the permission only to the system privileged apps).
-#
-# The original ("yes") patch allows user apps to gain the ability to spoof
-# themselves as other apps, which can be a major security threat. Using the
-# restricted patch and embedding the apps that requires it as system privileged
-# apps is a much secure option. See the README.md ("Custom mode") for an
-# example.
-ENV SIGNATURE_SPOOFING "no"
 
 # Generate delta files
 ENV BUILD_DELTA false
@@ -137,9 +108,7 @@ ENV OPENDELTA_BUILDS_JSON ''
 
 # Create Volume entry points
 ############################
-VOLUME $MIRROR_DIR
 VOLUME $SRC_DIR
-VOLUME $TMP_DIR
 VOLUME $CCACHE_DIR
 VOLUME $ZIP_DIR
 VOLUME $LMANIFEST_DIR
@@ -155,9 +124,7 @@ COPY src/ /root/
 
 # Create missing directories
 ############################
-RUN mkdir -p $MIRROR_DIR
 RUN mkdir -p $SRC_DIR
-RUN mkdir -p $TMP_DIR
 RUN mkdir -p $CCACHE_DIR
 RUN mkdir -p $ZIP_DIR
 RUN mkdir -p $LMANIFEST_DIR
@@ -169,8 +136,6 @@ RUN mkdir -p $USERSCRIPTS_DIR
 # Install build dependencies
 ############################
 COPY apt_preferences /etc/apt/preferences
-RUN apt-get -qq update
-RUN apt-get install -y imagemagick libwxgtk3.0-dev openjdk-8-jdk
 
 RUN echo 'deb http://deb.debian.org/debian sid main' >> /etc/apt/sources.list
 RUN echo 'deb http://deb.debian.org/debian experimental main' >> /etc/apt/sources.list
@@ -179,14 +144,21 @@ RUN apt-get -qqy upgrade
 
 RUN apt-get install -y bc bison bsdmainutils build-essential ccache cgpt cron \
       curl flex g++-multilib gcc-multilib git gnupg gperf imagemagick kmod \
-      lib32ncurses5-dev lib32readline-dev lib32z1-dev libesd0-dev liblz4-tool \
-      libncurses5-dev libsdl1.2-dev libssl-dev libxml2 \
+      lib32ncurses5-dev libncurses5 lib32readline-dev lib32z1-dev libtinfo5 liblz4-tool \
+      libncurses5-dev libsdl1.2-dev libssl-dev libwxgtk3.0-dev libxml2 \
       libxml2-utils lsof lzop maven pngcrush \
-      procps python rsync schedtool squashfs-tools wget xdelta3 xsltproc yasm \
+      procps python python3 rsync schedtool squashfs-tools software-properties-common wget xdelta3 xsltproc yasm \
       zip zlib1g-dev
 
 RUN curl https://storage.googleapis.com/git-repo-downloads/repo > /usr/local/bin/repo
 RUN chmod a+x /usr/local/bin/repo
+RUN ln -fs /usr/bin/python3 /usr/bin/python
+
+# Use adoptopenjdk.net to be able to use OpeJDK8 on debian:buster
+RUN curl -q https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | apt-key add -
+RUN add-apt-repository --yes https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/
+RUN apt-get -qq update && apt-get install -y adoptopenjdk-8-hotspot
+RUN update-alternatives --set java /usr/lib/jvm/adoptopenjdk-8-hotspot-amd64/bin/java
 
 # Download and build delta tools
 ################################

@@ -79,6 +79,9 @@ ENV ZIP_SUBDIR true
 # Write the verbose logs to $LOGS_DIR/$codename instead of $LOGS_DIR/
 ENV LOGS_SUBDIR true
 
+# Backup the .img in addition to zips
+ENV BACKUP_IMG false
+
 # Generate delta files
 ENV BUILD_DELTA false
 

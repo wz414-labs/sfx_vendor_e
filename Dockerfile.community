@@ -4,7 +4,9 @@ MAINTAINER Romain Hunault <romain.hunault@e.email>
 # Environment variables
 #######################
 
+ENV MIRROR_DIR /srv/mirror
 ENV SRC_DIR /srv/src
+ENV TMP_DIR /srv/tmp
 ENV CCACHE_DIR /srv/ccache
 ENV ZIP_DIR /srv/zips
 ENV LMANIFEST_DIR /srv/local_manifests
@@ -32,9 +34,9 @@ ENV CCACHE_SIZE 50G
 # See https://github.com/LineageOS/android_vendor_cm/branches for possible options
 ENV BRANCH_NAME 'v1-pie'
 
-# Environment for the device
-# eg. DEVICE=hammerhead
-ENV DEVICE ''
+# Environment for the device list (separate by comma if more than one)
+# eg. DEVICE_LIST=hammerhead,bullhead,angler
+ENV DEVICE_LIST ''
 
 # Release type string
 ENV RELEASE_TYPE 'UNOFFICIAL'
@@ -42,13 +44,26 @@ ENV RELEASE_TYPE 'UNOFFICIAL'
 # Repo use for build
 ENV REPO 'https://gitlab.e.foundation/e/os/android.git'
 
+# Repo use for build
+ENV MIRROR 'https://github.com/LineageOS/mirror'
+
+# OTA URL that will be used inside CMUpdater
+# Use this in combination with LineageOTA to make sure your device can auto-update itself from this buildbot
+ENV OTA_URL ''
+
 # User identity
-ENV USER_NAME '/e/ robot'
-ENV USER_MAIL 'erobot@e.email'
+ENV USER_NAME 'LineageOS Buildbot'
+ENV USER_MAIL 'lineageos-buildbot@docker.host'
 
 # Include proprietary files, downloaded automatically from github.com/TheMuppets/
 # Only some branches are supported
 ENV INCLUDE_PROPRIETARY true
+
+# Mount an overlay filesystem over the source dir to do each build on a clean source
+ENV BUILD_OVERLAY false
+
+# Clone the full LineageOS mirror (> 200 GB)
+ENV LOCAL_MIRROR false
 
 # If you want to preserve old ZIPs set this to 'false'
 ENV CLEAN_OUTDIR false
@@ -60,6 +75,9 @@ ENV CRONTAB_TIME 'now'
 
 # Clean artifacts output after each build
 ENV CLEAN_AFTER_BUILD true
+
+# Provide root capabilities builtin inside the ROM (see http://lineageos.org/Update-and-Build-Prep/)
+ENV WITH_SU false
 
 # Provide a default JACK configuration in order to avoid out-of-memory issues
 ENV ANDROID_JACK_VM_ARGS "-Dfile.encoding=UTF-8 -XX:+TieredCompilation -Xmx4G"
@@ -78,9 +96,6 @@ ENV ZIP_SUBDIR true
 
 # Write the verbose logs to $LOGS_DIR/$codename instead of $LOGS_DIR/
 ENV LOGS_SUBDIR true
-
-# Backup the .img in addition to zips
-ENV BACKUP_IMG false
 
 # Generate delta files
 ENV BUILD_DELTA false
@@ -111,7 +126,9 @@ ENV OPENDELTA_BUILDS_JSON ''
 
 # Create Volume entry points
 ############################
+VOLUME $MIRROR_DIR
 VOLUME $SRC_DIR
+VOLUME $TMP_DIR
 VOLUME $CCACHE_DIR
 VOLUME $ZIP_DIR
 VOLUME $LMANIFEST_DIR
@@ -127,7 +144,9 @@ COPY src/ /root/
 
 # Create missing directories
 ############################
+RUN mkdir -p $MIRROR_DIR
 RUN mkdir -p $SRC_DIR
+RUN mkdir -p $TMP_DIR
 RUN mkdir -p $CCACHE_DIR
 RUN mkdir -p $ZIP_DIR
 RUN mkdir -p $LMANIFEST_DIR

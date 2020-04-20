@@ -3,6 +3,7 @@
 # Docker build script
 # Copyright (c) 2017 Julian Xhokaxhiu
 # Copyright (C) 2017-2018 Nicola Corna <nicola@corna.info>
+# Copyright (C) 2020 eCorp Romain HUNAULT <romain.hunaul@e.email>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,6 +17,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+repo_log="$LOGS_DIR/repo-$(date +%Y%m%d).log"
 
 # cd to working directory
 cd "$SRC_DIR"
@@ -46,8 +49,8 @@ if [ "$LOCAL_MIRROR" = true ]; then
   cd "$MIRROR_DIR"
 
   if [ ! -d .repo ]; then
-    echo ">> [$(date)] Initializing mirror repository"
-    yes | repo init -u "$MIRROR" --mirror --no-clone-bundle -p linux
+    echo ">> [$(date)] Initializing mirror repository" | tee -a "$repo_log"
+    yes | repo init -u "$MIRROR" --mirror --no-clone-bundle -p linux &>> "$repo_log"
   fi
 
   # Copy local manifests to the appropriate folder in order take them into consideration
@@ -60,8 +63,8 @@ if [ "$LOCAL_MIRROR" = true ]; then
     wget -q -O .repo/local_manifests/proprietary.xml "https://raw.githubusercontent.com/TheMuppets/manifests/mirror/default.xml"
   fi
 
-  echo ">> [$(date)] Syncing mirror repository"
-  repo sync --force-sync --no-clone-bundle
+  echo ">> [$(date)] Syncing mirror repository" | tee -a "$repo_log"
+  repo sync --force-sync --no-clone-bundle &>> "$repo_log"
 
   if [ $? != 0 ]; then
     sync_successful=false
@@ -92,11 +95,11 @@ for branch in ${BRANCH_NAME//,/ }; do
       fi
     done
 
-    echo ">> [$(date)] (Re)initializing branch repository"
+    echo ">> [$(date)] (Re)initializing branch repository" | tee -a "$repo_log"
     if [ "$LOCAL_MIRROR" = true ]; then
-      yes | repo init -u "$REPO" --reference "$MIRROR_DIR" -b "$branch"
+      yes | repo init -u "$REPO" --reference "$MIRROR_DIR" -b "$branch" &>> "$repo_log"
     else
-      yes | repo init -u "$REPO" -b "$branch"
+      yes | repo init -u "$REPO" -b "$branch" &>> "$repo_log"
     fi
 
     # Copy local manifests to the appropriate folder in order take them into consideration
@@ -122,9 +125,9 @@ for branch in ${BRANCH_NAME//,/ }; do
       wget -q -O .repo/local_manifests/proprietary.xml "https://raw.githubusercontent.com/TheMuppets/manifests/$themuppets_branch/muppets.xml"
     fi
 
-    echo ">> [$(date)] Syncing branch repository"
+    echo ">> [$(date)] Syncing branch repository" | tee -a "$repo_log"
     builddate=$(date +%Y%m%d)
-    repo sync -c --force-sync
+    repo sync -c --force-sync &>> "$repo_log"
 
     if [ $? != 0 ]; then
       sync_successful=false
@@ -154,48 +157,9 @@ for branch in ${BRANCH_NAME//,/ }; do
       exit 1
     fi
 
-    # Set up our overlay
-    mkdir -p "vendor/$vendor/overlay/microg/"
-    sed -i "1s;^;PRODUCT_PACKAGE_OVERLAYS := vendor/$vendor/overlay/microg\n;" "vendor/$vendor/config/common.mk"
-
     los_ver_major=$(sed -n -e 's/^\s*PRODUCT_VERSION_MAJOR = //p' "vendor/$vendor/config/common.mk")
     los_ver_minor=$(sed -n -e 's/^\s*PRODUCT_VERSION_MINOR = //p' "vendor/$vendor/config/common.mk")
     los_ver="$los_ver_major.$los_ver_minor"
-
-    # If needed, apply the microG's signature spoofing patch
-    if [ "$SIGNATURE_SPOOFING" = "yes" ] || [ "$SIGNATURE_SPOOFING" = "restricted" ]; then
-      # Determine which patch should be applied to the current Android source tree
-      patch_name=""
-      case $android_version in
-        4.4* )    patch_name="android_frameworks_base-KK-LP.patch" ;;
-        5.*  )    patch_name="android_frameworks_base-KK-LP.patch" ;;
-        6.*  )    patch_name="android_frameworks_base-M.patch" ;;
-        7.*  )    patch_name="android_frameworks_base-N.patch" ;;
-        8.*  )    patch_name="android_frameworks_base-O.patch" ;;
-	      9*  )    patch_name="android_frameworks_base-P.patch" ;; #not sure why 9 not 9.0 but here's a fix that will work until android 90
-      esac
-
-      if ! [ -z $patch_name ]; then
-        cd frameworks/base
-        if [ "$SIGNATURE_SPOOFING" = "yes" ]; then
-          echo ">> [$(date)] Applying the standard signature spoofing patch ($patch_name) to frameworks/base"
-          echo ">> [$(date)] WARNING: the standard signature spoofing patch introduces a security threat"
-          patch --quiet -p1 -i "/root/signature_spoofing_patches/$patch_name"
-        else
-          echo ">> [$(date)] Applying the restricted signature spoofing patch (based on $patch_name) to frameworks/base"
-          sed 's/android:protectionLevel="dangerous"/android:protectionLevel="signature|privileged"/' "/root/signature_spoofing_patches/$patch_name" | patch --quiet -p1
-        fi
-        git clean -q -f
-        cd ../..
-
-        # Override device-specific settings for the location providers
-        mkdir -p "vendor/$vendor/overlay/microg/frameworks/base/core/res/res/values/"
-        cp /root/signature_spoofing_patches/frameworks_base_config.xml "vendor/$vendor/overlay/microg/frameworks/base/core/res/res/values/config.xml"
-      else
-        echo ">> [$(date)] ERROR: can't find a suitable signature spoofing patch for the current Android version ($android_version)"
-        exit 1
-      fi
-    fi
 
     echo ">> [$(date)] Setting \"$RELEASE_TYPE\" as release type"
     sed -i "/\$(filter .*\$(${vendor^^}_BUILDTYPE)/,+2d" "vendor/$vendor/config/common.mk"
@@ -216,12 +180,6 @@ for branch in ${BRANCH_NAME//,/ }; do
         echo ">> [$(date)] ERROR: no known Updater URL property found"
         exit 1
       fi
-    fi
-
-    # Add custom packages to be installed
-    if ! [ -z "$CUSTOM_PACKAGES" ]; then
-      echo ">> [$(date)] Adding custom packages ($CUSTOM_PACKAGES)"
-      sed -i "1s;^;PRODUCT_PACKAGES += $CUSTOM_PACKAGES\n\n;" "vendor/$vendor/config/common.mk"
     fi
 
     if [ "$SIGN_BUILDS" = true ]; then
@@ -262,9 +220,9 @@ for branch in ${BRANCH_NAME//,/ }; do
           builddate=$currentdate
 
           if [ "$LOCAL_MIRROR" = true ]; then
-            echo ">> [$(date)] Syncing mirror repository"
+            echo ">> [$(date)] Syncing mirror repository" | tee -a "$repo_log"
             cd "$MIRROR_DIR"
-            repo sync --force-sync --no-clone-bundle
+            repo sync --force-sync --no-clone-bundle &>> "$repo_log"
 
             if [ $? != 0 ]; then
               sync_successful=false
@@ -272,9 +230,9 @@ for branch in ${BRANCH_NAME//,/ }; do
             fi
           fi
 
-          echo ">> [$(date)] Syncing branch repository"
+          echo ">> [$(date)] Syncing branch repository" | tee -a "$repo_log"
           cd "$SRC_DIR/$branch_dir"
-          repo sync -c --force-sync
+          repo sync -c --force-sync &>> "$repo_log"
 
           if [ $? != 0 ]; then
             sync_successful=false
@@ -304,9 +262,11 @@ for branch in ${BRANCH_NAME//,/ }; do
           logsubdir=
         fi
 
+        DEBUG_LOG="$LOGS_DIR/$logsubdir/eelo-$los_ver-$builddate-$RELEASE_TYPE-$codename.log"
+
         if [ -f /root/userscripts/pre-build.sh ]; then
-          echo ">> [$(date)] Running pre-build.sh for $codename"
-          /root/userscripts/pre-build.sh $codename
+          echo ">> [$(date)] Running pre-build.sh for $codename" >> "$DEBUG_LOG"
+          /root/userscripts/pre-build.sh $codename &>> "$DEBUG_LOG"
 
           if [ $? != 0 ]; then
             build_device=false
@@ -314,52 +274,54 @@ for branch in ${BRANCH_NAME//,/ }; do
         fi
 
         if [ "$build_device" = false ]; then
-          echo ">> [$(date)] No build for $codename"
+          echo ">> [$(date)] No build for $codename" >> "$DEBUG_LOG"
           continue
         fi
 
         # Start the build
-        echo ">> [$(date)] Starting build for $codename, $branch branch"
+        echo ">> [$(date)] Starting build for $codename, $branch branch" | tee -a "$DEBUG_LOG"
         build_successful=false
         echo "ANDROID_JACK_VM_ARGS=${ANDROID_JACK_VM_ARGS}"
-        if brunch $codename ; then
+        echo "Switch to Python2"
+        ln -fs /usr/bin/python2 /usr/bin/python
+        if brunch $codename &>> "$DEBUG_LOG"; then
           currentdate=$(date +%Y%m%d)
           if [ "$builddate" != "$currentdate" ]; then
-            find out/target/product/$codename -maxdepth 1 -name "e-*-$currentdate-*.zip*" -type f -exec sh /root/fix_build_date.sh {} $currentdate $builddate \;
+            find out/target/product/$codename -maxdepth 1 -name "e-*-$currentdate-*.zip*" -type f -exec sh /root/fix_build_date.sh {} $currentdate $builddate \; &>> "$DEBUG_LOG"
           fi
 
           if [ "$BUILD_DELTA" = true ]; then
             if [ -d "delta_last/$codename/" ]; then
               # If not the first build, create delta files
-              echo ">> [$(date)] Generating delta files for $codename"
+              echo ">> [$(date)] Generating delta files for $codename" | tee -a "$DEBUG_LOG"
               cd /root/delta
-              if ./opendelta.sh $codename; then
-                echo ">> [$(date)] Delta generation for $codename completed"
+              if ./opendelta.sh $codename &>> "$DEBUG_LOG"; then
+                echo ">> [$(date)] Delta generation for $codename completed" | tee -a "$DEBUG_LOG"
               else
-                echo ">> [$(date)] Delta generation for $codename failed"
+                echo ">> [$(date)] Delta generation for $codename failed" | tee -a "$DEBUG_LOG"
               fi
               if [ "$DELETE_OLD_DELTAS" -gt "0" ]; then
-                /usr/bin/python /root/clean_up.py -n $DELETE_OLD_DELTAS -V $los_ver -N 1 "$DELTA_DIR/$codename"
+                /usr/bin/python /root/clean_up.py -n $DELETE_OLD_DELTAS -V $los_ver -N 1 "$DELTA_DIR/$codename" &>> $DEBUG_LOG
               fi
               cd "$source_dir"
             else
               # If the first build, copy the current full zip in $source_dir/delta_last/$codename/
-              echo ">> [$(date)] No previous build for $codename; using current build as base for the next delta"
-              mkdir -p delta_last/$codename/
-              find out/target/product/$codename -maxdepth 1 -name 'e-*.zip' -type f -exec cp {} "$source_dir/delta_last/$codename/" \;
+              echo ">> [$(date)] No previous build for $codename; using current build as base for the next delta" | tee -a "$DEBUG_LOG"
+              mkdir -p delta_last/$codename/ &>> "$DEBUG_LOG"
+              find out/target/product/$codename -maxdepth 1 -name 'e-*.zip' -type f -exec cp {} "$source_dir/delta_last/$codename/" \; &>> "$DEBUG_LOG"
             fi
           fi
           # Move produced ZIP files to the main OUT directory
-          echo ">> [$(date)] Moving build artifacts for $codename to '$ZIP_DIR/$zipsubdir'"
+          echo ">> [$(date)] Moving build artifacts for $codename to '$ZIP_DIR/$zipsubdir'" | tee -a "$DEBUG_LOG"
           cd out/target/product/$codename
           for build in e-*.zip; do
             sha256sum "$build" > "$ZIP_DIR/$zipsubdir/$build.sha256sum"
           done
-          find . -maxdepth 1 -name 'e-*.zip*' -type f -exec mv {} "$ZIP_DIR/$zipsubdir/" \;
+          find . -maxdepth 1 -name 'e-*.zip*' -type f -exec mv {} "$ZIP_DIR/$zipsubdir/" \; &>> "$DEBUG_LOG"
           cd "$source_dir"
           build_successful=true
         else
-          echo ">> [$(date)] Failed build for $codename"
+          echo ">> [$(date)] Failed build for $codename" | tee -a "$DEBUG_LOG"
         fi
 
         # Remove old zips and logs
@@ -378,10 +340,10 @@ for branch in ${BRANCH_NAME//,/ }; do
           fi
         fi
         if [ -f /root/userscripts/post-build.sh ]; then
-          echo ">> [$(date)] Running post-build.sh for $codename"
-          /root/userscripts/post-build.sh $codename $build_successful
+          echo ">> [$(date)] Running post-build.sh for $codename" >> "$DEBUG_LOG"
+          /root/userscripts/post-build.sh $codename $build_successful &>> "$DEBUG_LOG"
         fi
-        echo ">> [$(date)] Finishing build for $codename"
+        echo ">> [$(date)] Finishing build for $codename" | tee -a "$DEBUG_LOG"
 
         if [ "$BUILD_OVERLAY" = true ]; then
           # The Jack server must be stopped manually, as we want to unmount $TMP_DIR/merged
@@ -399,19 +361,20 @@ for branch in ${BRANCH_NAME//,/ }; do
         fi
 
         if [ "$CLEAN_AFTER_BUILD" = true ]; then
-          echo ">> [$(date)] Cleaning source dir for device $codename"
+          echo ">> [$(date)] Cleaning source dir for device $codename" | tee -a "$DEBUG_LOG"
           if [ "$BUILD_OVERLAY" = true ]; then
             cd "$TMP_DIR"
             rm -rf ./*
           else
             cd "$source_dir"
-            mka clean
+            mka clean &>> "$DEBUG_LOG"
           fi
         fi
 
+        echo "Switch back to Python3"
+        ln -fs /usr/bin/python3 /usr/bin/python
       fi
     done
-
   fi
 done
 

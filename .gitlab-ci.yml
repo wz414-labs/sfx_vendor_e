@@ -5,7 +5,7 @@ variables:
   DOCKER_DRIVER: overlay2
   CONTAINER_IMAGE: registry.gitlab.e.foundation:5000/$CI_PROJECT_PATH
 
-build_image:
+.build_image:
   stage: build
   image: docker:git
   services:
@@ -16,7 +16,22 @@ build_image:
   script:
     - "docker pull $CONTAINER_IMAGE:$IMAGE_TAG || true"
     - "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.e.foundation:5000"
-    - "docker build --cache-from $CONTAINER_IMAGE:$IMAGE_TAG -t $CONTAINER_IMAGE -t $CONTAINER_IMAGE:$IMAGE_TAG -t $CONTAINER_IMAGE:$IMAGE_TAG_RELEASE ."
+    - "docker build --cache-from $CONTAINER_IMAGE:$IMAGE_TAG -t $CONTAINER_IMAGE -t $CONTAINER_IMAGE:$IMAGE_TAG -t $CONTAINER_IMAGE:$IMAGE_TAG_RELEASE -f $DOCKERFILE ."
     - "docker push $CONTAINER_IMAGE:$IMAGE_TAG"
     - 'if [ "${CI_COMMIT_REF_NAME}" = master ] ; then docker push $CONTAINER_IMAGE:$IMAGE_TAG_RELEASE ; fi'
-    - 'if [ "${CI_COMMIT_REF_NAME}" = master ] ; then docker push $CONTAINER_IMAGE:latest ; fi'
+
+build_prod:
+  extends: .build_image
+  variables:
+    IMAGE_TAG: $CI_COMMIT_REF_NAME
+    IMAGE_TAG_RELEASE: prod
+    DOCKERFILE: Dockerfile
+
+build_community:
+  extends: .build_image
+  before_script:
+    - "mv build-community.sh src/build.sh"
+  variables:
+    IMAGE_TAG: $CI_COMMIT_REF_NAME-community
+    IMAGE_TAG_RELEASE: community
+    DOCKERFILE: Dockerfile.community

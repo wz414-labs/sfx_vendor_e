@@ -221,12 +221,12 @@ if [ -n "${BRANCH_NAME}" ] && [ -n "${DEVICE}" ]; then
       cd out/target/product/${DEVICE}
       for build in e-*.zip; do
         sha256sum "$build" > "$ZIP_DIR/$zipsubdir/$build.sha256sum"
+
+        if [ "$BACKUP_IMG" = true ]; then
+          find . -maxdepth 1 -name '*.img' -type f -exec zip "$ZIP_DIR/$zipsubdir/IMG-$build" {} \;
+        fi
       done
       find . -maxdepth 1 -name 'e-*.zip*' -type f -exec mv {} "$ZIP_DIR/$zipsubdir/" \;
-
-      if [ "$BACKUP_IMG" = true ]; then
-        find . -maxdepth 1 -name '*.img' -type f -exec cp {} "$ZIP_DIR/$zipsubdir/" \;
-      fi
 
       cd "$source_dir"
       build_successful=true

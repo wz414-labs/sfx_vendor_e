@@ -55,7 +55,15 @@ if [ -n "${BRANCH_NAME}" ] && [ -n "${DEVICE}" ]; then
   done
 
   echo ">> [$(date)] (Re)initializing branch repository"
-  yes | repo init -u "$REPO" -b "${BRANCH_NAME}"
+
+  TAG_PREFIX=""
+  curl https://gitlab.e.foundation/api/v4/projects/659/repository/tags | grep "\"name\":\"${BRANCH_NAME}\""
+  if [ $? == 0 ]
+  then
+    echo "Branch name ${BRANCH_NAME} is a tag on e/os/releases, prefix with refs/tags/ for 'repo init'"
+    TAG_PREFIX="refs/tags/"
+  fi
+  yes | repo init -u "$REPO" -b "${TAG_PREFIX}${BRANCH_NAME}"
 
   # Copy local manifests to the appropriate folder in order take them into consideration
   echo ">> [$(date)] Copying '$LMANIFEST_DIR/*.xml' to '.repo/local_manifests/'"

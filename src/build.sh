@@ -233,6 +233,7 @@ if [ -n "${BRANCH_NAME}" ] && [ -n "${DEVICE}" ]; then
         if [ "$BACKUP_IMG" = true ]; then
           find . -maxdepth 1 -name '*.img' -type f -exec zip "$ZIP_DIR/$zipsubdir/IMG-$build" {} \;
           sha256sum "IMG-$build" > "$ZIP_DIR/$zipsubdir/IMG-$build.sha256sum"
+          md5sum "IMG-$build" > "$ZIP_DIR/$zipsubdir/IMG-$build.md5sum"
         fi
       done
       find . -maxdepth 1 -name 'e-*.zip*' -type f -exec mv {} "$ZIP_DIR/$zipsubdir/" \;

@@ -99,7 +99,15 @@ for branch in ${BRANCH_NAME//,/ }; do
     if [ "$LOCAL_MIRROR" = true ]; then
       yes | repo init -u "$REPO" --reference "$MIRROR_DIR" -b "$branch" &>> "$repo_log"
     else
-      yes | repo init -u "$REPO" -b "$branch" &>> "$repo_log"
+      TAG_PREFIX=""
+      curl https://gitlab.e.foundation/api/v4/projects/659/repository/tags | grep "\"name\":\"$branch\""
+      if [ $? == 0 ]
+      then
+        echo "Branch name $branch is a tag on e/os/releases, prefix with refs/tags/ for 'repo init'"
+        TAG_PREFIX="refs/tags/"
+      fi
+
+      yes | repo init -u "$REPO" -b "${TAG_PREFIX}$branch" &>> "$repo_log"
     fi
 
     # Copy local manifests to the appropriate folder in order take them into consideration

@@ -205,7 +205,7 @@ fi
 cd $SRC_DIR
 
 # start building
-$ROOT_DIR/init.sh
+./root/init.sh
 
 ################################
 #end script

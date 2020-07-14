@@ -21,6 +21,9 @@ export LOGS_DIR=${SRC_DIR}/logs
 export USERSCRIPTS_DIR=${SRC_DIR}/userscripts
 export DEBIAN_FRONTEND=noninteractive
 
+#BUILDSCRIPTSREPO=https://gitlab.e.foundation/e/os/docker-lineage-cicd.git
+BUILDSCRIPTSREPO=https://code.binbash.rocks:8443/efoundation/docker-lineage-cicd.git
+
 # Configurable environment variables
 ####################################
 
@@ -171,7 +174,7 @@ mkdir -p $USERSCRIPTS_DIR
 # Copy build files
 ############################
 rm -rf $TMP_DIR/buildscripts
-git clone https://gitlab.e.foundation/e/os/docker-lineage-cicd.git $TMP_DIR/buildscripts
+git clone $BUILDSCRIPTSREPO $TMP_DIR/buildscripts
 
 rm -rf ${ROOT_DIR}
 cp -rf $TMP_DIR/buildscripts/src/* ${ROOT_DIR}/

@@ -17,6 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# check required variables
+if [ -z "$ROOT_DIR" ]||[ ! -d "$ROOT_DIR" ];then
+    echo ">> [$(date)] ERROR: Please set the ROOT_DIR (e.g. ROOT_DIR=./root) variable and ensure it is an existing directory" && exit 3
+fi
+
 # Copy the user scripts
 mkdir -p ${ROOT_DIR}/userscripts
 cp -r $USERSCRIPTS_DIR/. ${ROOT_DIR}/userscripts

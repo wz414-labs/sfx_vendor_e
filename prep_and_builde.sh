@@ -176,7 +176,7 @@ mkdir -p $USERSCRIPTS_DIR
 rm -rf $TMP_DIR/buildscripts
 git clone $BUILDSCRIPTSREPO $TMP_DIR/buildscripts
 
-rm -rf ${ROOT_DIR}
+[ ! -z "$ROOT_DIR" ] && [ -d "$ROOT_DIR" ] && [ "$ROOT_DIR" != "/" ] && rm -rf ${ROOT_DIR}/*
 cp -rf $TMP_DIR/buildscripts/src/* ${ROOT_DIR}/
 
 # Download and build delta tools

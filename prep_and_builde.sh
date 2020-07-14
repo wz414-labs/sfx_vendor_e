@@ -8,12 +8,12 @@ export MIRROR_DIR=${SRC_DIR}/mirror
 export ROOT_DIR=${SRC_DIR}/root
 
 # general tmp path
-export TMP_DIR=${SRC_DIR}/.tmp
+export TMP_DIR=${SRC_DIR}/tmp
 # mkdtemp (python) works with TMP (if not explicit set)
 export TMP=${TMP_DIR}
 
 export CCACHE_DIR=/ccache/jenkins
-export ZIP_DIR=${SRC_DIR}/.zips
+export ZIP_DIR=${SRC_DIR}/zips
 export LMANIFEST_DIR=./.repo/local_manifests
 export DELTA_DIR=${SRC_DIR}/delta
 export KEYS_DIR=${SRC_DIR}/keys

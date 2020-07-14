@@ -2,33 +2,12 @@
 
 Docker microservice for LineageOS Continuous Integration and Continous Deployment
 
-## Why Docker?
+## Why *not* Docker?
 
-A fair number of dependencies is needed to build LineageOS, plus a Linux system
-(and a discrete knowledge of it). With Docker we give you a minimal Linux build
-system with all the tools and scripts already integrated, easing considerably
-the creation of your own LineageOS build.
+Using the regular way of building /e/ is for advanced users only.
+Everyone who is NOT comfortable with building Android should consider starting with the Docker approach instead:
 
-Moreover Docker runs also on Microsoft Windows and Mac OS, which means that
-LineageOS can be built on such platforms without requiring a dual boot system
-or a manual set up of a Virtual Machine.
-
-## How do I install Docker?
-
-The official Docker guides are well-written:
- * Linux ([Ubuntu][docker-ubuntu], [Debian][docker-debian],
-    [CentOS][docker-centos] and [Fedora][docker-fedora] are officially
-    supported)
- * [Windows 10/Windows Server 2016 64bit][docker-win]
- * [Mac OS El Capitan 10.11 or newer][docker-mac]
-
-If your Windows or Mac system doesn't satisfy the requirements (or if you have
-Oracle VirtualBox installed, you can use [Docker Toolbox][docker-toolbox].
-Docker Toolbox is not described in this guide, but it should be very similar to
-the standard Docker installation.
-
-Once you can run the [`hello-world` image][docker-helloworld] you're ready to
-start!
+Checkout the [docker guide][docker-guide] for that.
 
 ## How can I build LineageOS?
 
@@ -38,15 +17,15 @@ values between the brackets.
 
 TL;DR - go to the [Examples](#examples)
 
-### Fundamental settings
+### Setup e
 
-The two fundamental settings are:
+The fundamental settings are:
 
+ * `SRC_DIR`: the work path where all e build scripts and results will land
  * `BRANCH_NAME (cm-14.1)`: LineageOS branch, see the branch list
     [here][los-branches] (multiple comma-separated branches can be specified)
  * `DEVICE_LIST`: comma-separated list of devices to build
  * `REPO (https://github.com/LineageOS/android.git)`: LineageOS repo use for build
-
 
 Running a build with only these two set will create a ZIP file almost identical
 to the LineageOS official builds, just signed with the test keys.
@@ -136,164 +115,41 @@ Other useful settings are:
     specified time (uses standard cron format)
 
 The full list of settings, including the less interesting ones not mentioned in
-this guide, can be found in the [Dockerfile][dockerfile].
+this guide, can be found in the [setupe.sh][setupe].
 
 ## Volumes
 
 You also have to provide Docker some volumes, where it'll store the source, the
 resulting builds, the cache and so on. The volumes are:
 
- * `/srv/src`, for the LineageOS sources
- * `/srv/zips`, for the output builds
- * `/srv/logs`, for the output logs
- * `/srv/ccache`, for the ccache
- * `/srv/local_manifests`, for custom manifests (optional)
- * `/srv/userscripts`, for the user scripts (optional)
+ * `$SRC_DIR/src`, for the LineageOS sources
+ * `$SRC_DIR/zips`, for the output builds
+ * `$SRC_DIR/logs`, for the output logs
+ * `/ccache`, for the ccache
+ * `$SRC_DIR/local_manifests`, for custom manifests (optional)
+ * `$SRC_DIR/userscripts`, for the user scripts (optional)
 
 When `SIGN_BUILDS` is `true`
 
- * `/srv/keys`, for the signing keys
+ * `$SRC_DIR/keys`, for the signing keys
 
 When `BUILD_OVERLAY` is `true`
 
- * `/srv/tmp`, for temporary files
+ * `$SRC_DIR/tmp`, for temporary files
 
 When `LOCAL_MIRROR` is `true`:
 
- * `/srv/mirror`, for the LineageOS mirror
+ * `$SRC_DIR/mirror`, for the LineageOS mirror
 
 ## Examples
 
-### Build for thea (cm-14.1, officially supported), test keys, no patches
-
 ```
-docker run \
-    -e "BRANCH_NAME=cm-14.1" \
-    -e "DEVICE_LIST=thea" \
-    -v "/home/user/lineage:/srv/src" \
-    -v "/home/user/zips:/srv/zips" \
-    -v "/home/user/logs:/srv/logs" \
-    -v "/home/user/cache:/srv/ccache" \
-    lineageos4microg/docker-lineage-cicd
-```
-
-### Build for dumpling (lineage-15.1, officially supported), custom keys, restricted signature spoofing with integrated microG and FDroid
-
-```
-docker run \
-    -e "BRANCH_NAME=lineage-15.1" \
-    -e "DEVICE_LIST=dumpling" \
-    -e "SIGN_BUILDS=true" \
-    -e "SIGNATURE_SPOOFING=restricted" \
-    -e "CUSTOM_PACKAGES=GmsCore GsfProxy FakeStore MozillaNlpBackend NominatimNlpBackend com.google.android.maps.jar FDroid FDroidPrivilegedExtension " \
-    -v "/home/user/lineage:/srv/src" \
-    -v "/home/user/zips:/srv/zips" \
-    -v "/home/user/logs:/srv/logs" \
-    -v "/home/user/cache:/srv/ccache" \
-    -v "/home/user/keys:/srv/keys" \
-    -v "/home/user/manifests:/srv/local_manifests" \
-    lineageos4microg/docker-lineage-cicd
-```
-
-If there are already keys in `/home/user/keys` they will be used, otherwise a
-new set will be generated before starting the build (and will be used for every
-subsequent build).
-
-The microG and FDroid packages are not present in the LineageOS repositories,
-and must be provided through an XML in the `/home/user/manifests`.
-[This][prebuiltapks] repo contains some of the most common packages for these
-kind of builds: to include it create an XML (the name is irrelevant, as long as
-it ends with `.xml`) in the `/home/user/manifests` folder with this content:
-
-```
-<?xml version="1.0" encoding="UTF-8"?>
-<manifest>
-  <project name="lineageos4microg/android_prebuilts_prebuiltapks" path="prebuilts/prebuiltapks" remote="github" revision="master" />
-</manifest>
-```
-
-### Build for four devices on cm-14.1 and lineage-15.1 (officially supported), custom keys, restricted signature spoofing with integrated microG and FDroid, custom OTA server
-
-```
-docker run \
-    -e "BRANCH_NAME=cm-14.1,lineage-15.1" \
-    -e "DEVICE_LIST_CM_14_1=onyx,thea" \
-    -e "DEVICE_LIST_LINEAGE_15_1=cheeseburger,dumpling" \
-    -e "SIGN_BUILDS=true" \
-    -e "SIGNATURE_SPOOFING=restricted" \
-    -e "CUSTOM_PACKAGES=GmsCore GsfProxy FakeStore MozillaNlpBackend NominatimNlpBackend com.google.android.maps.jar FDroid FDroidPrivilegedExtension " \
-    -e "OTA_URL=https://api.myserver.com/" \
-    -v "/home/user/lineage:/srv/src" \
-    -v "/home/user/zips:/srv/zips" \
-    -v "/home/user/logs:/srv/logs" \
-    -v "/home/user/cache:/srv/ccache" \
-    -v "/home/user/keys:/srv/keys" \
-    -v "/home/user/manifests:/srv/local_manifests" \
-    lineageos4microg/docker-lineage-cicd
-```
-
-### Build for a6000 (not officially supported), custom keys, restricted signature spoofing with integrated microG and FDroid
-
-As there is no official support for this device, we first have to include the
-sources in the source tree through an XML in the `/home/user/manifests` folder;
-from [this][a6000-xda] thread we get the links of:
-
- * Device tree: https://github.com/dev-harsh1998/android_device_lenovo_a6000
- * Common Tree: https://github.com/dev-harsh1998/android_device_lenovo_msm8916-common
- * Kernel: https://github.com/dev-harsh1998/kernel_lenovo_msm8916
- * Vendor blobs: https://github.com/dev-harsh1998/proprietary-vendor_lenovo
-
-Then, with the help of lineage.dependencies from the
-[device tree][a6000-device-tree-deps] and the
-[common tree][a6000-common-tree-deps] we create an XML
-`/home/user/manifests/a6000.xml` with this content:
-
-```
-<?xml version="1.0" encoding="UTF-8"?>
-<manifest>
-  <project name="dev-harsh1998/android_device_lenovo_a6000" path="device/lenovo/a6000" remote="github" />
-  <project name="dev-harsh1998/android_device_lenovo_msm8916-common" path="device/lenovo/msm8916-common" remote="github" />
-  <project name="dev-harsh1998/kernel_lenovo_msm8916" path="kernel/lenovo/a6000" remote="github" />
-  <project name="dev-harsh1998/proprietary-vendor_lenovo" path="vendor/lenovo" remote="github" />
-  <project name="LineageOS/android_device_qcom_common" path="device/qcom/common" remote="github" />
-</manifest>
-```
-
-We also want to include our custom packages so, like before, create an XML (for
-example `/home/user/manifests/custom_packages.xml`) with this content:
-
-```
-<?xml version="1.0" encoding="UTF-8"?>
-<manifest>
-  <project name="lineageos4microg/android_prebuilts_prebuiltapks" path="prebuilts/prebuiltapks" remote="github" revision="master" />
-</manifest>
-```
-
-We also set `INCLUDE_PROPRIETARY=false`, as the proprietary blobs are already
-provided by the repo
-https://github.com/dev-harsh1998/prorietary_vendor_lenovo (so we
-don't have to include the TheMuppets repo).
-
-Now we can just run the build like it was officially supported:
-
-```
-docker run \
-    -e "BRANCH_NAME=lineage-15.1" \
-    -e "DEVICE_LIST=a6000" \
-    -e "SIGN_BUILDS=true" \
-    -e "SIGNATURE_SPOOFING=restricted" \
-    -e "CUSTOM_PACKAGES=GmsCore GsfProxy FakeStore MozillaNlpBackend NominatimNlpBackend com.google.android.maps.jar FDroid FDroidPrivilegedExtension " \
-    -e "INCLUDE_PROPRIETARY=false" \
-    -v "/home/user/lineage:/srv/src" \
-    -v "/home/user/zips:/srv/zips" \
-    -v "/home/user/logs:/srv/logs" \
-    -v "/home/user/cache:/srv/ccache" \
-    -v "/home/user/keys:/srv/keys" \
-    -v "/home/user/manifests:/srv/local_manifests" \
-    lineageos4microg/docker-lineage-cicd
+TBD
 ```
 
 
+[setupe]: setupe.sh
+[docker-guide]: https://community.e.foundation/t/howto-build-e/
 [docker-ubuntu]: https://docs.docker.com/install/linux/docker-ce/ubuntu/
 [docker-debian]: https://docs.docker.com/install/linux/docker-ce/debian/
 [docker-centos]: https://docs.docker.com/install/linux/docker-ce/centos/
@@ -313,6 +169,3 @@ docker run \
 [los-extras]: https://download.lineageos.org/extras
 [dockerfile]: Dockerfile
 [prebuiltapks]: https://github.com/lineageos4microg/android_prebuilts_prebuiltapks
-[a6000-xda]: https://forum.xda-developers.com/lenovo-a6000/development/rom-lineageos-15-1-t3733747
-[a6000-device-tree-deps]: https://github.com/dev-harsh1998/android_device_lenovo_a6000/blob/lineage-15.1/lineage.dependencies
-[a6000-common-tree-deps]: https://github.com/dev-harsh1998/android_device_lenovo_msm8916-common/blob/lineage-15.1/lineage.dependencies

@@ -23,9 +23,9 @@ repo_log="$LOGS_DIR/repo-$(date +%Y%m%d).log"
 # cd to working directory
 cd "$SRC_DIR"
 
-if [ -f /root/userscripts/begin.sh ]; then
+if [ -f ${ROOT_DIR}/userscripts/begin.sh ]; then
   echo ">> [$(date)] Running begin.sh"
-  /root/userscripts/begin.sh
+  ${ROOT_DIR}/userscripts/begin.sh
 fi
 
 # If requested, clean the OUT dir in order to avoid clutter
@@ -184,10 +184,10 @@ for branch in ${BRANCH_NAME//,/ }; do
 
       if [ -n "$(grep updater_server_url packages/apps/Updater/res/values/strings.xml)" ]; then
         # "New" updater configuration: full URL (with placeholders {device}, {type} and {incr})
-        sed "s|{name}|updater_server_url|g; s|{url}|$OTA_URL/v1/{device}/{type}/{incr}|g" /root/packages_updater_strings.xml > "$updater_url_overlay_dir/strings.xml"
+        sed "s|{name}|updater_server_url|g; s|{url}|$OTA_URL/v1/{device}/{type}/{incr}|g" ${ROOT_DIR}/packages_updater_strings.xml > "$updater_url_overlay_dir/strings.xml"
       elif [ -n "$(grep conf_update_server_url_def packages/apps/Updater/res/values/strings.xml)" ]; then
         # "Old" updater configuration: just the URL
-        sed "s|{name}|conf_update_server_url_def|g; s|{url}|$OTA_URL|g" /root/packages_updater_strings.xml > "$updater_url_overlay_dir/strings.xml"
+        sed "s|{name}|conf_update_server_url_def|g; s|{url}|$OTA_URL|g" ${ROOT_DIR}/packages_updater_strings.xml > "$updater_url_overlay_dir/strings.xml"
       else
         echo ">> [$(date)] ERROR: no known Updater URL property found"
         exit 1
@@ -217,9 +217,9 @@ for branch in ${BRANCH_NAME//,/ }; do
     echo ">> [$(date)] Preparing build environment"
     source build/envsetup.sh > /dev/null
 
-    if [ -f /root/userscripts/before.sh ]; then
+    if [ -f ${ROOT_DIR}/userscripts/before.sh ]; then
       echo ">> [$(date)] Running before.sh"
-      /root/userscripts/before.sh
+      ${ROOT_DIR}/userscripts/before.sh
     fi
 
     for codename in ${devices//,/ }; do
@@ -276,9 +276,9 @@ for branch in ${BRANCH_NAME//,/ }; do
 
         DEBUG_LOG="$LOGS_DIR/$logsubdir/eelo-$los_ver-$builddate-$RELEASE_TYPE-$codename.log"
 
-        if [ -f /root/userscripts/pre-build.sh ]; then
+        if [ -f ${ROOT_DIR}/userscripts/pre-build.sh ]; then
           echo ">> [$(date)] Running pre-build.sh for $codename" >> "$DEBUG_LOG"
-          /root/userscripts/pre-build.sh $codename &>> "$DEBUG_LOG"
+          ${ROOT_DIR}/userscripts/pre-build.sh $codename &>> "$DEBUG_LOG"
 
           if [ $? != 0 ]; then
             build_device=false
@@ -295,25 +295,25 @@ for branch in ${BRANCH_NAME//,/ }; do
         build_successful=false
         echo "ANDROID_JACK_VM_ARGS=${ANDROID_JACK_VM_ARGS}"
         echo "Switch to Python2"
-        ln -fs /usr/bin/python2 /usr/bin/python
+        PYTHONBIN=/usr/bin/python2
         if brunch $codename &>> "$DEBUG_LOG"; then
           currentdate=$(date +%Y%m%d)
           if [ "$builddate" != "$currentdate" ]; then
-            find out/target/product/$codename -maxdepth 1 -name "e-*-$currentdate-*.zip*" -type f -exec sh /root/fix_build_date.sh {} $currentdate $builddate \; &>> "$DEBUG_LOG"
+            find out/target/product/$codename -maxdepth 1 -name "e-*-$currentdate-*.zip*" -type f -exec sh ${ROOT_DIR}/fix_build_date.sh {} $currentdate $builddate \; &>> "$DEBUG_LOG"
           fi
 
           if [ "$BUILD_DELTA" = true ]; then
             if [ -d "delta_last/$codename/" ]; then
               # If not the first build, create delta files
               echo ">> [$(date)] Generating delta files for $codename" | tee -a "$DEBUG_LOG"
-              cd /root/delta
+              cd ${ROOT_DIR}/delta
               if ./opendelta.sh $codename &>> "$DEBUG_LOG"; then
                 echo ">> [$(date)] Delta generation for $codename completed" | tee -a "$DEBUG_LOG"
               else
                 echo ">> [$(date)] Delta generation for $codename failed" | tee -a "$DEBUG_LOG"
               fi
               if [ "$DELETE_OLD_DELTAS" -gt "0" ]; then
-                /usr/bin/python /root/clean_up.py -n $DELETE_OLD_DELTAS -V $los_ver -N 1 "$DELTA_DIR/$codename" &>> $DEBUG_LOG
+                $PYTHONBIN ${ROOT_DIR}/clean_up.py -n $DELETE_OLD_DELTAS -V $los_ver -N 1 "$DELTA_DIR/$codename" &>> $DEBUG_LOG
               fi
               cd "$source_dir"
             else
@@ -339,21 +339,21 @@ for branch in ${BRANCH_NAME//,/ }; do
         # Remove old zips and logs
         if [ "$DELETE_OLD_ZIPS" -gt "0" ]; then
           if [ "$ZIP_SUBDIR" = true ]; then
-            /usr/bin/python /root/clean_up.py -n $DELETE_OLD_ZIPS -V $los_ver -N 1 "$ZIP_DIR/$zipsubdir"
+            $PYTHONBIN ${ROOT_DIR}/clean_up.py -n $DELETE_OLD_ZIPS -V $los_ver -N 1 "$ZIP_DIR/$zipsubdir"
           else
-            /usr/bin/python /root/clean_up.py -n $DELETE_OLD_ZIPS -V $los_ver -N 1 -c $codename "$ZIP_DIR"
+            $PYTHONBIN ${ROOT_DIR}/clean_up.py -n $DELETE_OLD_ZIPS -V $los_ver -N 1 -c $codename "$ZIP_DIR"
           fi
         fi
         if [ "$DELETE_OLD_LOGS" -gt "0" ]; then
           if [ "$LOGS_SUBDIR" = true ]; then
-            /usr/bin/python /root/clean_up.py -n $DELETE_OLD_LOGS -V $los_ver -N 1 "$LOGS_DIR/$logsubdir"
+            $PYTHONBIN ${ROOT_DIR}/clean_up.py -n $DELETE_OLD_LOGS -V $los_ver -N 1 "$LOGS_DIR/$logsubdir"
           else
-            /usr/bin/python /root/clean_up.py -n $DELETE_OLD_LOGS -V $los_ver -N 1 -c $codename "$LOGS_DIR"
+            $PYTHONBIN ${ROOT_DIR}/clean_up.py -n $DELETE_OLD_LOGS -V $los_ver -N 1 -c $codename "$LOGS_DIR"
           fi
         fi
-        if [ -f /root/userscripts/post-build.sh ]; then
+        if [ -f ${ROOT_DIR}/userscripts/post-build.sh ]; then
           echo ">> [$(date)] Running post-build.sh for $codename" >> "$DEBUG_LOG"
-          /root/userscripts/post-build.sh $codename $build_successful &>> "$DEBUG_LOG"
+          ${ROOT_DIR}/userscripts/post-build.sh $codename $build_successful &>> "$DEBUG_LOG"
         fi
         echo ">> [$(date)] Finishing build for $codename" | tee -a "$DEBUG_LOG"
 
@@ -384,7 +384,7 @@ for branch in ${BRANCH_NAME//,/ }; do
         fi
 
         echo "Switch back to Python3"
-        ln -fs /usr/bin/python3 /usr/bin/python
+        PYTHONBIN=/usr/bin/python3
       fi
     done
   fi
@@ -396,16 +396,16 @@ if ! [ -z "$OPENDELTA_BUILDS_JSON" ]; then
   if [ "$ZIP_SUBDIR" != true ]; then
     echo ">> [$(date)] WARNING: OpenDelta requires zip builds separated per device! You should set ZIP_SUBDIR to true"
   fi
-  /usr/bin/python /root/opendelta_builds_json.py "$ZIP_DIR" -o "$ZIP_DIR/$OPENDELTA_BUILDS_JSON"
+  $PYTHONBIN ${ROOT_DIR}/opendelta_builds_json.py "$ZIP_DIR" -o "$ZIP_DIR/$OPENDELTA_BUILDS_JSON"
 fi
 
 if [ "$DELETE_OLD_LOGS" -gt "0" ]; then
   find "$LOGS_DIR" -maxdepth 1 -name repo-*.log | sort | head -n -$DELETE_OLD_LOGS | xargs -r rm
 fi
 
-if [ -f /root/userscripts/end.sh ]; then
+if [ -f ${ROOT_DIR}/userscripts/end.sh ]; then
   echo ">> [$(date)] Running end.sh"
-  /root/userscripts/end.sh
+  ${ROOT_DIR}/userscripts/end.sh
 fi
 
 if [ "$build_successful" = false ] || [ "$sync_successful" = false ]; then

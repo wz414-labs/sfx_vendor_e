@@ -20,9 +20,9 @@
 # cd to working directory
 cd "$SRC_DIR"
 
-if [ -f /root/userscripts/begin.sh ]; then
+if [ -f ${ROOT_DIR}/userscripts/begin.sh ]; then
   echo ">> [$(date)] Running begin.sh"
-  /root/userscripts/begin.sh
+  ${ROOT_DIR}/userscripts/begin.sh
 fi
 
 # If requested, clean the OUT dir in order to avoid clutter
@@ -138,9 +138,9 @@ if [ -n "${BRANCH_NAME}" ] && [ -n "${DEVICE}" ]; then
   echo ">> [$(date)] Preparing build environment"
   source build/envsetup.sh > /dev/null
 
-  if [ -f /root/userscripts/before.sh ]; then
+  if [ -f ${ROOT_DIR}/userscripts/before.sh ]; then
     echo ">> [$(date)] Running before.sh"
-    /root/userscripts/before.sh
+    ${ROOT_DIR}/userscripts/before.sh
   fi
 
   build_device=true
@@ -177,9 +177,9 @@ if [ -n "${BRANCH_NAME}" ] && [ -n "${DEVICE}" ]; then
       logsubdir=
     fi
 
-    if [ -f /root/userscripts/pre-build.sh ]; then
+    if [ -f ${ROOT_DIR}/userscripts/pre-build.sh ]; then
       echo ">> [$(date)] Running pre-build.sh for ${DEVICE}"
-      /root/userscripts/pre-build.sh ${DEVICE}
+      ${ROOT_DIR}/userscripts/pre-build.sh ${DEVICE}
 
       if [ $? != 0 ]; then
         build_device=false
@@ -196,25 +196,25 @@ if [ -n "${BRANCH_NAME}" ] && [ -n "${DEVICE}" ]; then
     build_successful=false
     echo "ANDROID_JACK_VM_ARGS=${ANDROID_JACK_VM_ARGS}"
     echo "Switch to Python2"
-    ln -fs /usr/bin/python2 /usr/bin/python
+    PYTHONBIN=/usr/bin/python2
     if brunch ${DEVICE}; then
       currentdate=$(date +%Y%m%d)
       if [ "$builddate" != "$currentdate" ]; then
-        find out/target/product/${DEVICE} -maxdepth 1 -name "e-*-$currentdate-*.zip*" -type f -exec sh /root/fix_build_date.sh {} $currentdate $builddate \;
+        find out/target/product/${DEVICE} -maxdepth 1 -name "e-*-$currentdate-*.zip*" -type f -exec sh ${ROOT_DIR}/fix_build_date.sh {} $currentdate $builddate \;
       fi
 
       if [ "$BUILD_DELTA" = true ]; then
         if [ -d "delta_last/${DEVICE}/" ]; then
           # If not the first build, create delta files
           echo ">> [$(date)] Generating delta files for ${DEVICE}"
-          cd /root/delta
+          cd ${ROOT_DIR}/delta
           if ./opendelta.sh ${DEVICE}; then
             echo ">> [$(date)] Delta generation for ${DEVICE} completed"
           else
             echo ">> [$(date)] Delta generation for ${DEVICE} failed"
           fi
           if [ "$DELETE_OLD_DELTAS" -gt "0" ]; then
-            /usr/bin/python /root/clean_up.py -n $DELETE_OLD_DELTAS -V $los_ver -N 1 "$DELTA_DIR/${DEVICE}"
+            $PYTHONBIN ${ROOT_DIR}/clean_up.py -n $DELETE_OLD_DELTAS -V $los_ver -N 1 "$DELTA_DIR/${DEVICE}"
           fi
           cd "$source_dir"
         else
@@ -248,21 +248,21 @@ if [ -n "${BRANCH_NAME}" ] && [ -n "${DEVICE}" ]; then
     # Remove old zips and logs
     if [ "$DELETE_OLD_ZIPS" -gt "0" ]; then
       if [ "$ZIP_SUBDIR" = true ]; then
-        /usr/bin/python /root/clean_up.py -n $DELETE_OLD_ZIPS -V $los_ver -N 1 "$ZIP_DIR/$zipsubdir"
+        $PYTHONBIN ${ROOT_DIR}/clean_up.py -n $DELETE_OLD_ZIPS -V $los_ver -N 1 "$ZIP_DIR/$zipsubdir"
       else
-        /usr/bin/python /root/clean_up.py -n $DELETE_OLD_ZIPS -V $los_ver -N 1 -c ${DEVICE} "$ZIP_DIR"
+        $PYTHONBIN ${ROOT_DIR}/clean_up.py -n $DELETE_OLD_ZIPS -V $los_ver -N 1 -c ${DEVICE} "$ZIP_DIR"
       fi
     fi
     if [ "$DELETE_OLD_LOGS" -gt "0" ]; then
       if [ "$LOGS_SUBDIR" = true ]; then
-        /usr/bin/python /root/clean_up.py -n $DELETE_OLD_LOGS -V $los_ver -N 1 "$LOGS_DIR/$logsubdir"
+        $PYTHONBIN ${ROOT_DIR}/clean_up.py -n $DELETE_OLD_LOGS -V $los_ver -N 1 "$LOGS_DIR/$logsubdir"
       else
-        /usr/bin/python /root/clean_up.py -n $DELETE_OLD_LOGS -V $los_ver -N 1 -c ${DEVICE} "$LOGS_DIR"
+        $PYTHONBIN ${ROOT_DIR}/clean_up.py -n $DELETE_OLD_LOGS -V $los_ver -N 1 -c ${DEVICE} "$LOGS_DIR"
       fi
     fi
-    if [ -f /root/userscripts/post-build.sh ]; then
+    if [ -f ${ROOT_DIR}/userscripts/post-build.sh ]; then
       echo ">> [$(date)] Running post-build.sh for ${DEVICE}"
-      /root/userscripts/post-build.sh ${DEVICE} $build_successful
+      ${ROOT_DIR}/userscripts/post-build.sh ${DEVICE} $build_successful
     fi
     echo ">> [$(date)] Finishing build for ${DEVICE}"
 
@@ -275,8 +275,7 @@ if [ -n "${BRANCH_NAME}" ] && [ -n "${DEVICE}" ]; then
   fi
 
   echo "Switch back to Python3"
-  ln -fs /usr/bin/python3 /usr/bin/python
-
+  PYTHONBIN=/usr/bin/python3
 fi
 
 # Create the OpenDelta's builds JSON file
@@ -285,16 +284,16 @@ if ! [ -z "$OPENDELTA_BUILDS_JSON" ]; then
   if [ "$ZIP_SUBDIR" != true ]; then
     echo ">> [$(date)] WARNING: OpenDelta requires zip builds separated per device! You should set ZIP_SUBDIR to true"
   fi
-  /usr/bin/python /root/opendelta_builds_json.py "$ZIP_DIR" -o "$ZIP_DIR/$OPENDELTA_BUILDS_JSON"
+  $PYTHONBIN ${ROOT_DIR}/opendelta_builds_json.py "$ZIP_DIR" -o "$ZIP_DIR/$OPENDELTA_BUILDS_JSON"
 fi
 
 if [ "$DELETE_OLD_LOGS" -gt "0" ]; then
   find "$LOGS_DIR" -maxdepth 1 -name repo-*.log | sort | head -n -$DELETE_OLD_LOGS | xargs -r rm
 fi
 
-if [ -f /root/userscripts/end.sh ]; then
+if [ -f ${ROOT_DIR}/userscripts/end.sh ]; then
   echo ">> [$(date)] Running end.sh"
-  /root/userscripts/end.sh
+  ${ROOT_DIR}/userscripts/end.sh
 fi
 
 if [ "$build_successful" = false ] || [ "$sync_successful" = false ]; then

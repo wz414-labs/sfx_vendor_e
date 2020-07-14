@@ -3,7 +3,7 @@
 # Environment variables
 #######################
 
-export SRC_DIR=./.srv
+export SRC_DIR="$(pwd)/.srv"
 export MIRROR_DIR=${SRC_DIR}/mirror
 export ROOT_DIR=${SRC_DIR}/root
 

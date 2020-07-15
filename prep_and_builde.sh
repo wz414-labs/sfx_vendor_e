@@ -3,7 +3,7 @@
 # Environment variables
 #######################
 
-export SRC_DIR="$(pwd)/.srv"
+export SRC_DIR="$(pwd)"
 export MIRROR_DIR=${SRC_DIR}/mirror
 export ROOT_DIR=${SRC_DIR}/root
 
@@ -93,10 +93,10 @@ export ANDROID_JACK_VM_ARGS="-Dfile.encoding=UTF-8 -XX:+TieredCompilation -Xmx8G
 export CUSTOM_PACKAGES='MuPDF GmsCore GsfProxy FakeStore com.google.android.maps.jar Telegram Signal Mail BlissLauncher BlissIconPack MozillaNlpBackend OpenWeatherMapWeatherProvider AccountManager MagicEarth OpenCamera eDrive Weather Notes Tasks NominatimNlpBackend Light DroidGuard OpenKeychain Message Browser BrowserWebView Apps LibreOfficeViewer'
 
 # Sign the builds with the keys in $KEYS_DIR
-export SIGN_BUILDS=false
+export SIGN_BUILDS=true
 
 # When SIGN_BUILDS = true but no keys have been provided, generate a new set with this subject
-export KEYS_SUBJECT='/C=DE/ST=Somewhere/L=Somewhere/O=dev-name/OU=e/CN=eOS/emailAddress=android@android.local'
+export KEYS_SUBJECT='/C=DE/ST=Somewhere/L=Somewhere/O='${USER_NAME}'/OU=e/CN=eOS/emailAddress=android@android.local'
 
 # Move the resulting zips to $ZIP_DIR/$codename instead of $ZIP_DIR/
 export ZIP_SUBDIR=true
@@ -178,6 +178,7 @@ git clone $BUILDSCRIPTSREPO $TMP_DIR/buildscripts
 
 [ ! -z "$ROOT_DIR" ] && [ -d "$ROOT_DIR" ] && [ "$ROOT_DIR" != "/" ] && rm -rf ${ROOT_DIR}/*
 cp -rf $TMP_DIR/buildscripts/src/* ${ROOT_DIR}/
+cp -rf $TMP_DIR/buildscripts/build-community.sh ${ROOT_DIR}/
 
 # Download and build delta tools
 ################################
@@ -205,7 +206,7 @@ fi
 cd $SRC_DIR
 
 # start building
-./root/init.sh
+${ROOT_DIR}/init.sh
 
 ################################
 #end script

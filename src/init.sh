@@ -63,7 +63,7 @@ if [ "$SIGN_BUILDS" = true ]; then
 fi
 
 if [ "$CRONTAB_TIME" = "now" ]; then
-  ${ROOT_DIR}/build.sh
+  ${ROOT_DIR}/build-community.sh
 else
   # Initialize the cronjob
   cronFile=/tmp/buildcron

@@ -171,9 +171,9 @@ for branch in ${BRANCH_NAME//,/ }; do
 
     # change version on the dynamic branch
     if [ "$branch" == "v1-pie" ];then
-        sed -n -i -E 's/^(\s*PRODUCT_VERSION_MAJOR = )([0-9]+)/\11/p' "vendor/$vendor/config/common.mk"
-        sed -n -i -E 's/^(\s*PRODUCT_VERSION_MINOR = )([0-9]+)/\1BETA/p' "vendor/$vendor/config/common.mk"
-        sed -n -i -E 's/^(\s*PRODUCT_VERSION_MAINTENANCE = )([0-9]+)/\1x/p' "vendor/$vendor/config/common.mk"
+        sed -i -E 's/^(\s*PRODUCT_VERSION_MAJOR = )([0-9]+)/\11/g1' "vendor/$vendor/config/common.mk"
+        sed -i -E 's/^(\s*PRODUCT_VERSION_MINOR = )([0-9]+)/\1BETA/g1' "vendor/$vendor/config/common.mk"
+        sed -i -E 's/^(\s*PRODUCT_VERSION_MAINTENANCE = )([0-9]+)/\1x/g1' "vendor/$vendor/config/common.mk"
     fi
 
     # parse ROM version

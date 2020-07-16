@@ -87,7 +87,7 @@ export CLEAN_OUTDIR=false
 export CRONTAB_TIME='now'
 
 # Clean artifacts output after each build
-export CLEAN_AFTER_BUILD=true
+export CLEAN_AFTER_BUILD=false
 
 # Provide root capabilities builtin inside the ROM (see http://lineageos.org/Update-and-Build-Prep/)
 export WITH_SU=false

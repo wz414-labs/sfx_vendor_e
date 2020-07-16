@@ -172,6 +172,7 @@ for branch in ${BRANCH_NAME//,/ }; do
     los_ver_major=$(sed -n -e 's/^\s*PRODUCT_VERSION_MAJOR = //p' "vendor/$vendor/config/common.mk")
     los_ver_minor=$(sed -n -e 's/^\s*PRODUCT_VERSION_MINOR = //p' "vendor/$vendor/config/common.mk")
     los_ver="$los_ver_major.$los_ver_minor"
+    [ "$branch" == "v1-pie" ] && los_ver = "1.BETA"
 
     echo ">> [$(date)] Setting \"$RELEASE_TYPE\" as release type"
     sed -i "/\$(filter .*\$(${vendor^^}_BUILDTYPE)/,+2d" "vendor/$vendor/config/common.mk"

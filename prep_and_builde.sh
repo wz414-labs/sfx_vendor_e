@@ -38,11 +38,18 @@ export CCACHE_SIZE=12G
 
 # Environment for the LineageOS branches name
 # See https://github.com/LineageOS/android_vendor_cm/branches for possible options
-export BRANCH_NAME='v0.9.3-pie'
+# (allowing you to start this script as BRANCH_NAME='v0.9.3-pie' ./prep_and_builde.sh)
+# if not set as an environment variable the following will be used instead:
+[ -z "$BRANCH_NAME" ] \
+    && export BRANCH_NAME='v1-pie'
 
 # Environment for the device list (separate by comma if more than one)
 # eg. DEVICE_LIST=hammerhead,bullhead,angler
-export DEVICE_LIST=''
+# when set as environment variable the following will be overwritten.
+# (allowing you to start this script as DEVICE_LIST='foo,bar' ./prep_and_builde.sh)
+# if not set as an environment variable the following will be used instead:
+[ -z "$DEVICE_LIST" ] \
+    && export DEVICE_LIST=''
 
 # Release type string
 export RELEASE_TYPE='UNOFFICIAL'

@@ -169,6 +169,14 @@ for branch in ${BRANCH_NAME//,/ }; do
     mkdir -p "vendor/$vendor/overlay/microg/"
     sed -i "1s;^;PRODUCT_PACKAGE_OVERLAYS := vendor/$vendor/overlay/microg\n;" "vendor/$vendor/config/common.mk"
 
+    # change version on the dynamic branch
+    if [ "$branch" == "v1-pie" ];then
+        sed -n -i -E 's/^(\s*PRODUCT_VERSION_MAJOR = )([0-9]+)/\11/p' "vendor/$vendor/config/common.mk"
+        sed -n -i -E 's/^(\s*PRODUCT_VERSION_MINOR = )([0-9]+)/\1BETA/p' "vendor/$vendor/config/common.mk"
+        sed -n -i -E 's/^(\s*PRODUCT_VERSION_MAINTENANCE = )([0-9]+)/\1x/p' "vendor/$vendor/config/common.mk"
+    fi
+
+    # parse ROM version
     los_ver_major=$(sed -n -e 's/^\s*PRODUCT_VERSION_MAJOR = //p' "vendor/$vendor/config/common.mk")
     los_ver_minor=$(sed -n -e 's/^\s*PRODUCT_VERSION_MINOR = //p' "vendor/$vendor/config/common.mk")
     los_ver="$los_ver_major.$los_ver_minor"

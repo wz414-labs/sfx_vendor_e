@@ -1,6 +1,4 @@
-# docker-lineage-cicd
-
-Docker microservice for LineageOS Continuous Integration and Continous Deployment
+# android vendor e
 
 ## Why *not* Docker?
 

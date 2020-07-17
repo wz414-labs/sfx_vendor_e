@@ -54,25 +54,9 @@ if [ "$SIGN_BUILDS" = true ]; then
       done
     done
   fi
-
   for c in cyngn{-priv,}-app testkey; do
     for e in pk8 x509.pem; do
       ln -s releasekey.$e "$KEYS_DIR/$c.$e" 2> /dev/null
     done
   done
-fi
-
-if [ "$CRONTAB_TIME" = "now" ]; then
-  ${ROOT_DIR}/build-community.sh
-else
-  # Initialize the cronjob
-  cronFile=/tmp/buildcron
-  printf "SHELL=/bin/bash\n" > $cronFile
-  printenv -0 | sed -e 's/=\x0/=""\n/g'  | sed -e 's/\x0/\n/g' | sed -e "s/_=/PRINTENV=/g" >> $cronFile
-  printf "\n$CRONTAB_TIME /usr/bin/flock -n /var/lock/build.lock ${ROOT_DIR}/build.sh >> /var/log/docker.log 2>&1\n" >> $cronFile
-  crontab $cronFile
-  rm $cronFile
-
-  # Run crond in foreground
-  cron -f 2>&1
 fi

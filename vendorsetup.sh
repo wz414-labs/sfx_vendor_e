@@ -282,12 +282,8 @@ mkdir -p $USERSCRIPTS_DIR
 
 # Copy build files
 ############################
-rm -rf $TMP_DIR/buildscripts
-git clone $BUILDSCRIPTSREPO $TMP_DIR/buildscripts
-
 [ ! -z "$ROOT_DIR" ] && [ -d "$ROOT_DIR" ] && [ "$ROOT_DIR" != "/" ] && rm -rf ${ROOT_DIR}/*
-cp -rf $TMP_DIR/buildscripts/src/* ${ROOT_DIR}/
-cp -rf $TMP_DIR/buildscripts/build-community.sh ${ROOT_DIR}/
+cp -rf ${VENDOR_DIR}/src/* ${ROOT_DIR}/
 
 # Download and build delta tools
 ################################

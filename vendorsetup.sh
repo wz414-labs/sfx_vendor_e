@@ -1,18 +1,15 @@
 #!/bin/bash
+#######################################################################################
 
-# Environment variables
-#######################
-
-export SRC_DIR="$(pwd)"
+# Static environment variables
+#################################
+export SRC_DIR="$(gettop)/.e"
 export MIRROR_DIR=${SRC_DIR}/mirror
 export ROOT_DIR=${SRC_DIR}/root
-
 # general tmp path
 export TMP_DIR=${SRC_DIR}/tmp
-# mkdtemp (python) works with TMP (if not explicit set)
+# mkdtemp (python) works with TMP (if dir is not explicit set in the functions)
 export TMP=${TMP_DIR}
-
-export CCACHE_DIR=/ccache/jenkins
 export ZIP_DIR=${SRC_DIR}/zips
 export LMANIFEST_DIR=./.repo/local_manifests
 export DELTA_DIR=${SRC_DIR}/delta
@@ -20,101 +17,170 @@ export KEYS_DIR=${SRC_DIR}/keys
 export LOGS_DIR=${SRC_DIR}/logs
 export USERSCRIPTS_DIR=${SRC_DIR}/userscripts
 export DEBIAN_FRONTEND=noninteractive
-
-#BUILDSCRIPTSREPO=https://gitlab.e.foundation/e/os/docker-lineage-cicd.git
-BUILDSCRIPTSREPO=https://code.binbash.rocks:8443/efoundation/docker-lineage-cicd.git
+export BUILDSCRIPTSREPO="https://gitlab.e.foundation/steadfasterX/android_vendor_e.git"
 
 # Configurable environment variables
 ####################################
 
 # By default we want to use CCACHE, you can disable this
 # WARNING: disabling this may slow down a lot your builds!
-export USE_CCACHE=1
+# define EOS_USE_CCACHE in your device/<vendor>/<codename>/vendorsetup.sh.
+USE_CCACHE="$EOS_USE_CCACHE"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${USE_CCACHE:=1}"
+
+# the ccache directory (e.g. a tmpfs ramdisk)
+# define EOS_CCACHE_DIR in your device/<vendor>/<codename>/vendorsetup.sh.
+CCACHE_DIR="$EOS_CCACHE_DIR"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${CCACHE_DIR:=/ccache/e-os}"
 
 # ccache maximum size. It should be a number followed by an optional suffix: k,
 # M, G, T (decimal), Ki, Mi, Gi or Ti (binary). The default suffix is G. Use 0
 # for no limit.
-export CCACHE_SIZE=12G
+# define EOS_CCACHE_SIZE in your device/<vendor>/<codename>/vendorsetup.sh.
+CCACHE_SIZE="$EOS_CCACHE_SIZE"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${CCACHE_SIZE:=12G}"
 
 # Environment for the LineageOS branches name
 # See https://github.com/LineageOS/android_vendor_cm/branches for possible options
-# (allowing you to start this script as BRANCH_NAME='v0.9.3-pie' ./prep_and_builde.sh)
-# if not set as an environment variable the following will be used instead:
-[ -z "$BRANCH_NAME" ] \
-    && export BRANCH_NAME='v1-pie'
+# define EOS_BRANCH_NAME in your device/<vendor>/<codename>/vendorsetup.sh.
+BRANCH_NAME=$EOS_BRANCH_NAME
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${BRANCH_NAME:=v1-pie}"
 
 # Environment for the device list (separate by comma if more than one)
 # eg. DEVICE_LIST=hammerhead,bullhead,angler
 # when set as environment variable the following will be overwritten.
 # (allowing you to start this script as DEVICE_LIST='foo,bar' ./prep_and_builde.sh)
 # if not set as an environment variable the following will be used instead:
-[ -z "$DEVICE_LIST" ] \
-    && export DEVICE_LIST=''
+# define EOS_DEVICE_LIST in your device/<vendor>/<codename>/vendorsetup.sh.
+DEVICE_LIST="$EOS_DEVICE_LIST"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${DEVICE_LIST:=}"
 
 # Release type string
-export RELEASE_TYPE='UNOFFICIAL'
+# define EOS_RELEASE_TYPE in your device/<vendor>/<codename>/vendorsetup.sh.
+RELEASE_TYPE="$EOS_RELEASE_TYPE"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${RELEASE_TYPE:=UNOFFICIAL}"
 
 # Repo use for build
-export REPO='https://gitlab.e.foundation/e/os/android.git'
+# define EOS_REPO in your device/<vendor>/<codename>/vendorsetup.sh.
+REPO="$EOS_REPO"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${REPO:=https://gitlab.e.foundation/e/os/android.git}"
 
 # Repo use for build
-export MIRROR=''
+# define EOS_MIRROR in your device/<vendor>/<codename>/vendorsetup.sh.
+MIRROR="$EOS_MIRROR"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${MIRROR:=undefined}"
 
 # OTA URL that will be used inside CMUpdater
 # Use this in combination with LineageOTA to make sure your device can auto-update itself from this buildbot
-export OTA_URL=''
+# define EOS_OTA_URL in your device/<vendor>/<codename>/vendorsetup.sh.
+OTA_URL="$EOS_OTA_URL"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${OTA_URL:=undefined}"
 
 # User identity
-[ -z "$USER_NAME" ] \
-    && export USER_NAME=$(git config --global --get user.name)
-[ -z "$USER_MAIL" ] \
-    && export USER_MAIL=$(git config --global --get user.email)
+# define EOS_GIT_USER_NAME in your device/<vendor>/<codename>/vendorsetup.sh otherwise
+# the global git conf will be used
+[ -z "$EOS_GIT_USER_NAME" ] && \
+USER_NAME=$(git config --global --get user.name)
+
+# define EOS_GIT_USER_MAIL in your device/<vendor>/<codename>/vendorsetup.sh otherwise
+# the global git conf will be used
+[ -z "$EOS_GIT_USER_MAIL" ] && \
+USER_MAIL=$(git config --global --get user.email)
 
 # verify git config
 if [ -z "$USER_NAME" ]||[ -z "$USER_MAIL" ];then echo "ERROR: Please set USER_NAME and USER_MAIL as an environment variable or use 'git config --global' to set it once"; exit 4;fi
 
 # Include proprietary files, downloaded automatically from github.com/TheMuppets/
 # Only some branches are supported
-export INCLUDE_PROPRIETARY=false
+# define EOS_INCLUDE_PROPRIETARY in your device/<vendor>/<codename>/vendorsetup.sh.
+INCLUDE_PROPRIETARY="$EOS_INCLUDE_PROPRIETARY"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${INCLUDE_PROPRIETARY:=false}"
 
 # Mount an overlay filesystem over the source dir to do each build on a clean source
-export BUILD_OVERLAY=false
+# define EOS_BUILD_OVERLAY in your device/<vendor>/<codename>/vendorsetup.sh.
+BUILD_OVERLAY="$EOS_BUILD_OVERLAY"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${BUILD_OVERLAY:=false}"
 
 # Clone the full LineageOS mirror (> 200 GB)
-export LOCAL_MIRROR=false
+# define EOS_LOCAL_MIRROR in your device/<vendor>/<codename>/vendorsetup.sh.
+LOCAL_MIRROR="$EOS_LOCAL_MIRROR"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${LOCAL_MIRROR:=false}"
 
 # If you want to preserve old ZIPs set this to 'false'
-export CLEAN_OUTDIR=false
+# define EOS_CLEAN_OUTDIR in your device/<vendor>/<codename>/vendorsetup.sh.
+CLEAN_OUTDIR="$EOS_CLEAN_OUTDIR"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${CLEAN_OUTDIR:=false}"
 
 # Change this cron rule to what fits best for you
 # Use 'now' to start the build immediately
 # For example, '0 10 * * *' means 'Every day at 10:00 UTC'
-export CRONTAB_TIME='now'
+# define EOS_CRONTAB_TIME in your device/<vendor>/<codename>/vendorsetup.sh.
+CRONTAB_TIME="$EOS_CRONTAB_TIME"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${CRONTAB_TIME:=now}"
 
 # Clean artifacts output after each build
-export CLEAN_AFTER_BUILD=false
+# define EOS_CLEAN_AFTER_BUILD in your device/<vendor>/<codename>/vendorsetup.sh.
+CLEAN_AFTER_BUILD="$EOS_CLEAN_AFTER_BUILD"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${CLEAN_AFTER_BUILD:=false}"
 
 # Provide root capabilities builtin inside the ROM (see http://lineageos.org/Update-and-Build-Prep/)
-export WITH_SU=false
+# define EOS_WITH_SU in your device/<vendor>/<codename>/vendorsetup.sh.
+WITH_SU="$EOS_WITH_SU"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${WITH_SU:=false}"
 
 # Provide a default JACK configuration in order to avoid out-of-memory issues
 # ensure you have enough RAM to fit the 8G or change accordingly:
-export ANDROID_JACK_VM_ARGS="-Dfile.encoding=UTF-8 -XX:+TieredCompilation -Xmx8G"
+# define EOS_ANDROID_JACK_VM_ARGS in your device/<vendor>/<codename>/vendorsetup.sh.
+ANDROID_JACK_VM_ARGS="$EOS_ANDROID_JACK_VM_ARGS"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${ANDROID_JACK_VM_ARGS:=-Dfile.encoding=UTF-8 -XX:+TieredCompilation -Xmx8G}"
 
 # Custom packages to be installed
-export CUSTOM_PACKAGES='MuPDF GmsCore GsfProxy FakeStore com.google.android.maps.jar Telegram Signal Mail BlissLauncher BlissIconPack MozillaNlpBackend OpenWeatherMapWeatherProvider AccountManager MagicEarth OpenCamera eDrive Weather Notes Tasks NominatimNlpBackend Light DroidGuard OpenKeychain Message Browser BrowserWebView Apps LibreOfficeViewer'
+# define EOS_CUSTOM_PACKAGES in your device/<vendor>/<codename>/vendorsetup.sh.
+CUSTOM_PACKAGES="$EOS_CUSTOM_PACKAGES"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${CUSTOM_PACKAGES:=MuPDF GmsCore GsfProxy FakeStore com.google.android.maps.jar Telegram Signal Mail BlissLauncher BlissIconPack MozillaNlpBackend OpenWeatherMapWeatherProvider AccountManager MagicEarth OpenCamera eDrive Weather Notes Tasks NominatimNlpBackend Light DroidGuard OpenKeychain Message Browser BrowserWebView Apps LibreOfficeViewer}"
 
 # Sign the builds with the keys in $KEYS_DIR
-export SIGN_BUILDS=true
+# define EOS_SIGN_BUILDS in your device/<vendor>/<codename>/vendorsetup.sh.
+SIGN_BUILDS="$EOS_SIGN_BUILDS"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${SIGN_BUILDS:=true}"
 
 # When SIGN_BUILDS = true but no keys have been provided, generate a new set with this subject
-export KEYS_SUBJECT='/C=DE/ST=Somewhere/L=Somewhere/O='${USER_NAME}'/OU=e/CN=eOS/emailAddress=android@android.local'
+# define EOS_KEYS_SUBJECT in your device/<vendor>/<codename>/vendorsetup.sh.
+KEYS_SUBJECT="$EOS_KEYS_SUBJECT"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+[ -z "$KEYS_SUBJECT" ] && \
+KEYS_SUBJECT='/C=DE/ST=Somewhere/L=Somewhere/O='${USER_NAME}'/OU=e/CN=eOS/emailAddress=android@android.local'
 
 # Move the resulting zips to $ZIP_DIR/$codename instead of $ZIP_DIR/
-export ZIP_SUBDIR=true
+# define EOS_ZIP_SUBDIR in your device/<vendor>/<codename>/vendorsetup.sh.
+ZIP_SUBDIR="$EOS_ZIP_SUBDIR"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${ZIP_SUBDIR:=true}"
 
 # Write the verbose logs to $LOGS_DIR/$codename instead of $LOGS_DIR/
-export LOGS_SUBDIR=true
+# define EOS_LOGS_SUBDIR in your device/<vendor>/<codename>/vendorsetup.sh.
+LOGS_SUBDIR="$EOS_LOGS_SUBDIR"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${LOGS_SUBDIR:=true}"
 
 # Apply the MicroG's signature spoofing patch
 # Valid values are "no", "yes" (for the original MicroG's patch) and
@@ -125,25 +191,43 @@ export LOGS_SUBDIR=true
 # restricted patch and embedding the apps that requires it as system privileged
 # apps is a much secure option. See the README.md ("Custom mode") for an
 # example.
-export SIGNATURE_SPOOFING="restricted"
+# define EOS_SIGNATURE_SPOOFING in your device/<vendor>/<codename>/vendorsetup.sh.
+SIGNATURE_SPOOFING="$EOS_SIGNATURE_SPOOFING"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${SIGNATURE_SPOOFING:=restricted}"
 
 # Generate delta files
-export BUILD_DELTA=false
+# define EOS_BUILD_DELTA in your device/<vendor>/<codename>/vendorsetup.sh.
+BUILD_DELTA="$EOS_BUILD_DELTA"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${BUILD_DELTA:=false}"
 
 # Delete old zips in $ZIP_DIR, keep only the N latest one (0 to disable)
-export DELETE_OLD_ZIPS=0
+# define EOS_DELETE_OLD_ZIPS in your device/<vendor>/<codename>/vendorsetup.sh.
+DELETE_OLD_ZIPS="$EOS_DELETE_OLD_ZIPS"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${DELETE_OLD_ZIPS:=0}"
 
 # Delete old deltas in $DELTA_DIR, keep only the N latest one (0 to disable)
-export DELETE_OLD_DELTAS=0
+# define EOS_DELETE_OLD_DELTAS in your device/<vendor>/<codename>/vendorsetup.sh.
+DELETE_OLD_DELTAS="$EOS_DELETE_OLD_DELTAS"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${DELETE_OLD_DELTAS:=0}"
 
 # Delete old logs in $LOGS_DIR, keep only the N latest one (0 to disable)
-export DELETE_OLD_LOGS=0
+# define EOS_DELETE_OLD_LOGS in your device/<vendor>/<codename>/vendorsetup.sh.
+DELETE_OLD_LOGS="$EOS_DELETE_OLD_LOGS"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${DELETE_OLD_LOGS:=0}"
 
 # Create a JSON file that indexes the build zips at the end of the build process
 # (for the updates in OpenDelta). The file will be created in $ZIP_DIR with the
 # specified name; leave empty to skip it.
 # Requires ZIP_SUBDIR.
-export OPENDELTA_BUILDS_JSON=''
+# define EOS_OPENDELTA_BUILDS_JSON in your device/<vendor>/<codename>/vendorsetup.sh.
+OPENDELTA_BUILDS_JSON="$OPENDELTA_BUILDS_JSON"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${OPENDELTA_BUILDS_JSON:=undefined}"
 
 # You can optionally specify a USERSCRIPTS_DIR volume containing these scripts:
 #  * begin.sh, run at the very beginning
@@ -213,12 +297,22 @@ if [ "$BUILD_DELTA" == "true" ];then
                    s|publish|$DELTA_DIR|g" $ROOT_DIR/delta/opendelta.sh
 fi
 
-# Set the work directory
-########################
-cd $SRC_DIR
+# export all environment variables
+##################################
+# re-generate by outcomment the following big export line and:
+# egrep '^\w+=' vendor/e/vendorsetup.sh |cut -d = -f1 |tr "\n" " "
 
-# start building
-${ROOT_DIR}/init.sh
+EXPORTS="USE_CCACHE CCACHE_DIR CCACHE_SIZE BRANCH_NAME DEVICE_LIST RELEASE_TYPE REPO MIRROR OTA_URL USER_NAME USER_MAIL INCLUDE_PROPRIETARY BUILD_OVERLAY LOCAL_MIRROR CLEAN_OUTDIR CRONTAB_TIME CLEAN_AFTER_BUILD WITH_SU ANDROID_JACK_VM_ARGS CUSTOM_PACKAGES SIGN_BUILDS KEYS_SUBJECT KEYS_SUBJECT ZIP_SUBDIR LOGS_SUBDIR SIGNATURE_SPOOFING BUILD_DELTA DELETE_OLD_ZIPS DELETE_OLD_DELTAS DELETE_OLD_LOGS OPENDELTA_BUILDS_JSON"
 
-################################
+for ex in $EXPORTS;do
+    LERR=0
+    # check if each variable is set
+    [ -z "${!ex}" ] && echo "ERROR: required variable $ex is not set!" && LERR=1
+    [ $LERR -ne 0 ] && break 9
+    # empty those vars which are allowed to be empty (keyword: undefined is set)
+    [ "${!ex}" == "undefined" ] && declare $ex='' && test -z "${!ex}" && echo "emptied $ex >${!ex}<"
+    export $ex || echo "ERROR: failed to export $ex"
+done
+
+##################################
 #end script

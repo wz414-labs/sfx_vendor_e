@@ -3,7 +3,9 @@
 
 # Static environment variables
 #################################
-export SRC_DIR="$(gettop)/.e"
+export ANDROIDTOP="$(pwd)"
+export SRC_DIR="${ANDROIDTOP}/.e"
+export VENDOR_DIR="${ANDROIDTOP}/vendor/e"
 export MIRROR_DIR=${SRC_DIR}/mirror
 export ROOT_DIR=${SRC_DIR}/root
 # general tmp path
@@ -18,6 +20,11 @@ export LOGS_DIR=${SRC_DIR}/logs
 export USERSCRIPTS_DIR=${SRC_DIR}/userscripts
 export DEBIAN_FRONTEND=noninteractive
 export BUILDSCRIPTSREPO="https://gitlab.e.foundation/steadfasterX/android_vendor_e.git"
+
+# re-generate by outcomment the following big export line and:
+# egrep '^\w+=' vendor/e/vendorsetup.sh |cut -d = -f1 |tr "\n" " "
+
+EXPORTS="USE_CCACHE CCACHE_DIR CCACHE_SIZE BRANCH_NAME EOS_DEVICE RELEASE_TYPE REPO MIRROR OTA_URL USER_NAME USER_MAIL INCLUDE_PROPRIETARY BUILD_OVERLAY LOCAL_MIRROR CLEAN_OUTDIR CRONTAB_TIME CLEAN_AFTER_BUILD WITH_SU ANDROID_JACK_VM_ARGS CUSTOM_PACKAGES SIGN_BUILDS KEYS_SUBJECT KEYS_SUBJECT ZIP_SUBDIR LOGS_SUBDIR SIGNATURE_SPOOFING BUILD_DELTA DELETE_OLD_ZIPS DELETE_OLD_DELTAS DELETE_OLD_LOGS OPENDELTA_BUILDS_JSON"
 
 # Configurable environment variables
 ####################################
@@ -290,7 +297,7 @@ if [ "$BUILD_DELTA" == "true" ];then
         sed -i -e "s|^\s*HOME=.*|HOME=$ROOT_DIR|; \
                    s|^\s*BIN_XDELTA=.*|BIN_XDELTA=xdelta3|; \
                    s|^\s*FILE_MATCH=.*|FILE_MATCH=lineage-\*.zip|; \
-                   s|^\s*PATH_CURRENT=.*|PATH_CURRENT=$SRC_DIR/out/target/product/$DEVICE|; \
+                   s|^\s*PATH_CURRENT=.*|PATH_CURRENT=$ANDROIDTOP/out/target/product/$DEVICE|; \
                    s|^\s*PATH_LAST=.*|PATH_LAST=$SRC_DIR/delta_last/$DEVICE|; \
                    s|^\s*KEY_X509=.*|KEY_X509=$KEYS_DIR/releasekey.x509.pem|; \
                    s|^\s*KEY_PK8=.*|KEY_PK8=$KEYS_DIR/releasekey.pk8|; \
@@ -299,10 +306,6 @@ fi
 
 # export all environment variables
 ##################################
-# re-generate by outcomment the following big export line and:
-# egrep '^\w+=' vendor/e/vendorsetup.sh |cut -d = -f1 |tr "\n" " "
-
-EXPORTS="USE_CCACHE CCACHE_DIR CCACHE_SIZE BRANCH_NAME DEVICE_LIST RELEASE_TYPE REPO MIRROR OTA_URL USER_NAME USER_MAIL INCLUDE_PROPRIETARY BUILD_OVERLAY LOCAL_MIRROR CLEAN_OUTDIR CRONTAB_TIME CLEAN_AFTER_BUILD WITH_SU ANDROID_JACK_VM_ARGS CUSTOM_PACKAGES SIGN_BUILDS KEYS_SUBJECT KEYS_SUBJECT ZIP_SUBDIR LOGS_SUBDIR SIGNATURE_SPOOFING BUILD_DELTA DELETE_OLD_ZIPS DELETE_OLD_DELTAS DELETE_OLD_LOGS OPENDELTA_BUILDS_JSON"
 
 for ex in $EXPORTS;do
     LERR=0

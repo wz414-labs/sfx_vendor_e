@@ -62,19 +62,16 @@ CCACHE_SIZE="$EOS_CCACHE_SIZE"
 # Environment for the LineageOS branches name
 # See https://github.com/LineageOS/android_vendor_cm/branches for possible options
 # define EOS_BRANCH_NAME in your device/<vendor>/<codename>/vendorsetup.sh.
-BRANCH_NAME=$EOS_BRANCH_NAME
+BRANCH_NAME="$EOS_BRANCH_NAME"
 # if not defined in the device vendorsetup.sh the following will be used instead:
 : "${BRANCH_NAME:=v1-pie}"
 
-# Environment for the device list (separate by comma if more than one)
-# eg. DEVICE_LIST=hammerhead,bullhead,angler
-# when set as environment variable the following will be overwritten.
-# (allowing you to start this script as DEVICE_LIST='foo,bar' ./prep_and_builde.sh)
+# Environment for the device name
 # if not set as an environment variable the following will be used instead:
-# define EOS_DEVICE_LIST in your device/<vendor>/<codename>/vendorsetup.sh.
-DEVICE_LIST="$EOS_DEVICE_LIST"
+# define EOS_DEVICE_TARGET in your device/<vendor>/<codename>/vendorsetup.sh.
+EOS_DEVICE="$(get_build_var TARGET_DEVICE)"
 # if not defined in the device vendorsetup.sh the following will be used instead:
-: "${DEVICE_LIST:=}"
+: "${EOS_DEVICE:=}"
 
 # Release type string
 # define EOS_RELEASE_TYPE in your device/<vendor>/<codename>/vendorsetup.sh.

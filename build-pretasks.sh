@@ -283,3 +283,4 @@ fi
       fi
     done
   fi
+breakfast $EOS_DEVICE

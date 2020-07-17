@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Docker build script
 # Copyright (c) 2017 Julian Xhokaxhiu
 # Copyright (C) 2017-2018 Nicola Corna <nicola@corna.info>
 # Copyright (C) 2020 eCorp Romain HUNAULT <romain.hunaul@e.email>
@@ -21,7 +20,7 @@
 repo_log="$LOGS_DIR/repo-$(date +%Y%m%d).log"
 
 # cd to working directory
-cd "$SRC_DIR"
+cd "$ANDROIDTOP"
 
 if [ -f ${ROOT_DIR}/userscripts/begin.sh ]; then
   echo ">> [$(date)] Running begin.sh"
@@ -32,14 +31,6 @@ fi
 if [ "$CLEAN_OUTDIR" = true ]; then
   echo ">> [$(date)] Cleaning '$ZIP_DIR'"
   rm -rf "$ZIP_DIR/"*
-fi
-
-# Treat DEVICE_LIST as DEVICE_LIST_<first_branch>
-first_branch=$(cut -d ',' -f 1 <<< "$BRANCH_NAME")
-if [ -n "$DEVICE_LIST" ]; then
-  device_list_first_branch="DEVICE_LIST_$(sed 's/.*-\([a-zA-Z]*\)$/\1/' <<< $first_branch)"
-  device_list_first_branch=${device_list_first_branch^^}
-  read $device_list_first_branch <<< "$DEVICE_LIST,${!device_list_first_branch}"
 fi
 
 sync_successful=true
@@ -71,19 +62,12 @@ if [ "$LOCAL_MIRROR" = true ]; then
   fi
 fi
 
-for branch in ${BRANCH_NAME//,/ }; do
-  branch_dir=$(sed 's/.*-\([a-zA-Z]*\)$/\1/' <<< $branch)
-  branch_dir=${branch_dir^^}
-  device_list_cur_branch="DEVICE_LIST_$branch_dir"
-  devices=${!device_list_cur_branch}
+  if [ -n "$BRANCH_NAME" ] && [ -n "$EOS_DEVICE" ]; then
 
-  if [ -n "$branch" ] && [ -n "$devices" ]; then
+    cd "$ANDROIDTOP"
 
-    mkdir -p "$SRC_DIR/$branch_dir"
-    cd "$SRC_DIR/$branch_dir"
-
-    echo ">> [$(date)] Branch:  $branch"
-    echo ">> [$(date)] Devices: $devices"
+    echo ">> [$(date)] Branch:  $BRANCH_NAME"
+    echo ">> [$(date)] Devices: $EOS_DEVICE"
 
     # Remove previous changes of vendor/cm, vendor/lineage and frameworks/base (if they exist)
     for path in "vendor/cm" "vendor/lineage" "frameworks/base"; do
@@ -91,39 +75,34 @@ for branch in ${BRANCH_NAME//,/ }; do
         cd "$path"
         git reset -q --hard
         git clean -q -fd
-        cd "$SRC_DIR/$branch_dir"
+        cd "$ANDROIDTOP"
       fi
     done
 
     echo ">> [$(date)] (Re)initializing branch repository" | tee -a "$repo_log"
     if [ "$LOCAL_MIRROR" = true ]; then
-      yes | repo init -u "$REPO" --reference "$MIRROR_DIR" -b "$branch" &>> "$repo_log"
+      yes | repo init -u "$REPO" --reference "$MIRROR_DIR" -b "$BRANCH_NAME" &>> "$repo_log"
     else
       TAG_PREFIX=""
-      curl https://gitlab.e.foundation/api/v4/projects/659/repository/tags | grep "\"name\":\"$branch\""
+      curl https://gitlab.e.foundation/api/v4/projects/659/repository/tags | grep "\"name\":\"$BRANCH_NAME\""
       if [ $? == 0 ]
       then
-        echo "Branch name $branch is a tag on e/os/releases, prefix with refs/tags/ for 'repo init'"
+        echo "Branch name $BRANCH_NAME is a tag on e/os/releases, prefix with refs/tags/ for 'repo init'"
         TAG_PREFIX="refs/tags/"
       fi
 
-      yes | repo init -u "$REPO" -b "${TAG_PREFIX}$branch" &>> "$repo_log"
+      yes | repo init -u "$REPO" -b "${TAG_PREFIX}$BRANCH_NAME" &>> "$repo_log"
     fi
-
-    # Copy local manifests to the appropriate folder in order take them into consideration
-    echo ">> [$(date)] Copying '$LMANIFEST_DIR/*.xml' to '.repo/local_manifests/'"
-    mkdir -p .repo/local_manifests
-    rsync -a --delete --include '*.xml' --exclude '*' "$LMANIFEST_DIR/" .repo/local_manifests/
 
     rm -f .repo/local_manifests/proprietary.xml
     if [ "$INCLUDE_PROPRIETARY" = true ]; then
-      if [[ $branch =~ nougat$ ]]; then
+      if [[ $BRANCH_NAME =~ nougat$ ]]; then
         themuppets_branch=cm-14.1
         echo ">> [$(date)] Use branch $themuppets_branch on github.com/TheMuppets"
-      elif [[ $branch =~ oreo$ ]]; then
+      elif [[ $BRANCH_NAME =~ oreo$ ]]; then
         themuppets_branch=lineage-15.1
         echo ">> [$(date)] Use branch $themuppets_branch on github.com/TheMuppets"
-      elif [[ $branch =~ pie$ ]]; then
+      elif [[ $BRANCH_NAME =~ pie$ ]]; then
         themuppets_branch=lineage-16.0
         echo ">> [$(date)] Use branch $themuppets_branch on github.com/TheMuppets"
       else
@@ -170,7 +149,7 @@ for branch in ${BRANCH_NAME//,/ }; do
     sed -i "1s;^;PRODUCT_PACKAGE_OVERLAYS := vendor/$vendor/overlay/microg\n;" "vendor/$vendor/config/common.mk"
 
     # change version on the dynamic branch
-    if [ "$branch" == "v1-pie" ];then
+    if [ "$BRANCH_NAME" == "v1-pie" ];then
         sed -i -E 's/^(\s*PRODUCT_VERSION_MAJOR = )([0-9]+)/\11/g1' "vendor/$vendor/config/common.mk"
         sed -i -E 's/^(\s*PRODUCT_VERSION_MINOR = )([0-9]+)/\1BETA/g1' "vendor/$vendor/config/common.mk"
         sed -i -E 's/^(\s*PRODUCT_VERSION_MAINTENANCE = )([0-9]+)/\1x/g1' "vendor/$vendor/config/common.mk"
@@ -214,7 +193,7 @@ for branch in ${BRANCH_NAME//,/ }; do
     elif [ "$android_version_major" -ge "5" ]; then
       jdk_version=7
     else
-      echo ">> [$(date)] ERROR: $branch requires a JDK version too old (< 7); aborting"
+      echo ">> [$(date)] ERROR: $BRANCH_NAME requires a JDK version too old (< 7); aborting"
       exit 1
     fi
 
@@ -223,6 +202,7 @@ for branch in ${BRANCH_NAME//,/ }; do
 
     # Prepare the environment
     echo ">> [$(date)] Preparing build environment"
+    $VENDOR_DIR/vendorsetup.sh --reset > /dev/null
     source build/envsetup.sh > /dev/null
 
     if [ -f ${ROOT_DIR}/userscripts/before.sh ]; then
@@ -230,7 +210,7 @@ for branch in ${BRANCH_NAME//,/ }; do
       ${ROOT_DIR}/userscripts/before.sh
     fi
 
-    for codename in ${devices//,/ }; do
+    for codename in $EOS_DEVICE; do
       build_device=true
       if ! [ -z "$codename" ]; then
 
@@ -251,7 +231,7 @@ for branch in ${BRANCH_NAME//,/ }; do
           fi
 
           echo ">> [$(date)] Syncing branch repository" | tee -a "$repo_log"
-          cd "$SRC_DIR/$branch_dir"
+          cd "$ANDROIDTOP"
           repo sync -c --force-sync &>> "$repo_log"
 
           if [ $? != 0 ]; then
@@ -262,10 +242,10 @@ for branch in ${BRANCH_NAME//,/ }; do
 
         if [ "$BUILD_OVERLAY" = true ]; then
           mkdir -p "$TMP_DIR/device" "$TMP_DIR/workdir" "$TMP_DIR/merged"
-          mount -t overlay overlay -o lowerdir="$SRC_DIR/$branch_dir",upperdir="$TMP_DIR/device",workdir="$TMP_DIR/workdir" "$TMP_DIR/merged"
+          mount -t overlay overlay -o lowerdir="$ANDROIDTOP",upperdir="$TMP_DIR/device",workdir="$TMP_DIR/workdir" "$TMP_DIR/merged"
           source_dir="$TMP_DIR/merged"
         else
-          source_dir="$SRC_DIR/$branch_dir"
+          source_dir="$ANDROIDTOP"
         fi
         cd "$source_dir"
 
@@ -298,124 +278,8 @@ for branch in ${BRANCH_NAME//,/ }; do
           continue
         fi
 
-        # Start the build
-        echo ">> [$(date)] Starting build for $codename, $branch branch" | tee -a "$DEBUG_LOG"
-        build_successful=false
-        echo "ANDROID_JACK_VM_ARGS=${ANDROID_JACK_VM_ARGS}"
-        echo "Switch to Python2"
-        PYTHONBIN=/usr/bin/python2
-        if brunch $codename &>> "$DEBUG_LOG"; then
-          currentdate=$(date +%Y%m%d)
-          if [ "$builddate" != "$currentdate" ]; then
-            find out/target/product/$codename -maxdepth 1 -name "e-*-$currentdate-*.zip*" -type f -exec sh ${ROOT_DIR}/fix_build_date.sh {} $currentdate $builddate \; &>> "$DEBUG_LOG"
-          fi
-
-          if [ "$BUILD_DELTA" = true ]; then
-            if [ -d "delta_last/$codename/" ]; then
-              # If not the first build, create delta files
-              echo ">> [$(date)] Generating delta files for $codename" | tee -a "$DEBUG_LOG"
-              cd ${ROOT_DIR}/delta
-              if ./opendelta.sh $codename &>> "$DEBUG_LOG"; then
-                echo ">> [$(date)] Delta generation for $codename completed" | tee -a "$DEBUG_LOG"
-              else
-                echo ">> [$(date)] Delta generation for $codename failed" | tee -a "$DEBUG_LOG"
-              fi
-              if [ "$DELETE_OLD_DELTAS" -gt "0" ]; then
-                $PYTHONBIN ${ROOT_DIR}/clean_up.py -n $DELETE_OLD_DELTAS -V $los_ver -N 1 "$DELTA_DIR/$codename" &>> $DEBUG_LOG
-              fi
-              cd "$source_dir"
-            else
-              # If the first build, copy the current full zip in $source_dir/delta_last/$codename/
-              echo ">> [$(date)] No previous build for $codename; using current build as base for the next delta" | tee -a "$DEBUG_LOG"
-              mkdir -p delta_last/$codename/ &>> "$DEBUG_LOG"
-              find out/target/product/$codename -maxdepth 1 -name 'e-*.zip' -type f -exec cp {} "$source_dir/delta_last/$codename/" \; &>> "$DEBUG_LOG"
-            fi
-          fi
-          # Move produced ZIP files to the main OUT directory
-          echo ">> [$(date)] Moving build artifacts for $codename to '$ZIP_DIR/$zipsubdir'" | tee -a "$DEBUG_LOG"
-          cd out/target/product/$codename
-          for build in e-*.zip; do
-            sha256sum "$build" > "$ZIP_DIR/$zipsubdir/$build.sha256sum"
-          done
-          find . -maxdepth 1 -name 'e-*.zip*' -type f -exec mv {} "$ZIP_DIR/$zipsubdir/" \; &>> "$DEBUG_LOG"
-          cd "$source_dir"
-          build_successful=true
-        else
-          echo ">> [$(date)] Failed build for $codename" | tee -a "$DEBUG_LOG"
-        fi
-
-        # Remove old zips and logs
-        if [ "$DELETE_OLD_ZIPS" -gt "0" ]; then
-          if [ "$ZIP_SUBDIR" = true ]; then
-            $PYTHONBIN ${ROOT_DIR}/clean_up.py -n $DELETE_OLD_ZIPS -V $los_ver -N 1 "$ZIP_DIR/$zipsubdir"
-          else
-            $PYTHONBIN ${ROOT_DIR}/clean_up.py -n $DELETE_OLD_ZIPS -V $los_ver -N 1 -c $codename "$ZIP_DIR"
-          fi
-        fi
-        if [ "$DELETE_OLD_LOGS" -gt "0" ]; then
-          if [ "$LOGS_SUBDIR" = true ]; then
-            $PYTHONBIN ${ROOT_DIR}/clean_up.py -n $DELETE_OLD_LOGS -V $los_ver -N 1 "$LOGS_DIR/$logsubdir"
-          else
-            $PYTHONBIN ${ROOT_DIR}/clean_up.py -n $DELETE_OLD_LOGS -V $los_ver -N 1 -c $codename "$LOGS_DIR"
-          fi
-        fi
-        if [ -f ${ROOT_DIR}/userscripts/post-build.sh ]; then
-          echo ">> [$(date)] Running post-build.sh for $codename" >> "$DEBUG_LOG"
-          ${ROOT_DIR}/userscripts/post-build.sh $codename $build_successful &>> "$DEBUG_LOG"
-        fi
-        echo ">> [$(date)] Finishing build for $codename" | tee -a "$DEBUG_LOG"
-
-        if [ "$BUILD_OVERLAY" = true ]; then
-          # The Jack server must be stopped manually, as we want to unmount $TMP_DIR/merged
-          cd "$TMP_DIR"
-          if [ -f "$TMP_DIR/merged/prebuilts/sdk/tools/jack-admin" ]; then
-            "$TMP_DIR/merged/prebuilts/sdk/tools/jack-admin kill-server" &> /dev/null || true
-          fi
-          lsof | grep "$TMP_DIR/merged" | awk '{ print $2 }' | sort -u | xargs -r kill &> /dev/null
-
-          while [ -n "$(lsof | grep $TMP_DIR/merged)" ]; do
-            sleep 1
-          done
-
-          umount "$TMP_DIR/merged"
-        fi
-
-        if [ "$CLEAN_AFTER_BUILD" = true ]; then
-          echo ">> [$(date)] Cleaning source dir for device $codename" | tee -a "$DEBUG_LOG"
-          if [ "$BUILD_OVERLAY" = true ]; then
-            cd "$TMP_DIR"
-            rm -rf ./*
-          else
-            cd "$source_dir"
-            mka clean &>> "$DEBUG_LOG"
-          fi
-        fi
-
         echo "Switch back to Python3"
         PYTHONBIN=/usr/bin/python3
       fi
     done
   fi
-done
-
-# Create the OpenDelta's builds JSON file
-if ! [ -z "$OPENDELTA_BUILDS_JSON" ]; then
-  echo ">> [$(date)] Creating OpenDelta's builds JSON file (ZIP_DIR/$OPENDELTA_BUILDS_JSON)"
-  if [ "$ZIP_SUBDIR" != true ]; then
-    echo ">> [$(date)] WARNING: OpenDelta requires zip builds separated per device! You should set ZIP_SUBDIR to true"
-  fi
-  $PYTHONBIN ${ROOT_DIR}/opendelta_builds_json.py "$ZIP_DIR" -o "$ZIP_DIR/$OPENDELTA_BUILDS_JSON"
-fi
-
-if [ "$DELETE_OLD_LOGS" -gt "0" ]; then
-  find "$LOGS_DIR" -maxdepth 1 -name repo-*.log | sort | head -n -$DELETE_OLD_LOGS | xargs -r rm
-fi
-
-if [ -f ${ROOT_DIR}/userscripts/end.sh ]; then
-  echo ">> [$(date)] Running end.sh"
-  ${ROOT_DIR}/userscripts/end.sh
-fi
-
-if [ "$build_successful" = false ] || [ "$sync_successful" = false ]; then
-  exit 1
-fi

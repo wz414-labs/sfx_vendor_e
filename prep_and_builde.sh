@@ -65,8 +65,13 @@ export MIRROR=''
 export OTA_URL=''
 
 # User identity
-export USER_NAME='user'
-export USER_MAIL='user@email.edu'
+[ -z "$USER_NAME" ] \
+    && export USER_NAME=$(git config --global --get user.name)
+[ -z "$USER_MAIL" ] \
+    && export USER_MAIL=$(git config --global --get user.email)
+
+# verify git config
+if [ -z "$USER_NAME" ]||[ -z "$USER_MAIL" ];then echo "ERROR: Please set USER_NAME and USER_MAIL as an environment variable or use 'git config --global' to set it once"; exit 4;fi
 
 # Include proprietary files, downloaded automatically from github.com/TheMuppets/
 # Only some branches are supported

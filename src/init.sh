@@ -49,7 +49,7 @@ if [ "$SIGN_BUILDS" = true ]; then
       for e in pk8 x509.pem; do
         if [ ! -f "$KEYS_DIR/$c.$e" ]; then
           echo ">> [$(date)] SIGN_BUILDS = true and not empty \$KEYS_DIR, but \"\$KEYS_DIR/$c.$e\" is missing"
-          exit 1
+          break 9
         fi
       done
     done

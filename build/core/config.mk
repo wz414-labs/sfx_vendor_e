@@ -1,5 +1,5 @@
 # mka builde will run preparee bacon and then finalizee
-builde: preparee bacon finalizee
+builde: preparee synce postsynce bacon finalizee
 .PHONY: builde
 
 # prepare & init e
@@ -10,6 +10,9 @@ preparee:
 synce:
 	$(BASH) vendor/e/sync.sh
 
+# special handling after sync, before actually build
+postsynce:
+	$(BASH) vendor/e/post-sync.sh
 
 # final tasks after building e
 finalizee:

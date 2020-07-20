@@ -5,7 +5,11 @@ builde: preparee bacon finalizee
 # prepare & init e
 preparee:
 	$(BASH) vendor/e/src/init.sh
-	$(BASH) vendor/e/build-pretasks.sh
+
+# force sync everything needed
+synce:
+	$(BASH) vendor/e/sync.sh
+
 
 # final tasks after building e
 finalizee:

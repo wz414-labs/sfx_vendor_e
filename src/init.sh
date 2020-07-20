@@ -42,7 +42,7 @@ if [ "$SIGN_BUILDS" = true ]; then
     echo ">> [$(date)] SIGN_BUILDS = true but empty \$KEYS_DIR, generating new keys"
     for c in releasekey platform shared media; do
       echo ">> [$(date)]  Generating $c..."
-      ${ROOT_DIR}/make_key "$KEYS_DIR/$c" "$KEYS_SUBJECT" <<< '' &> /dev/null
+      ${VENDOR_DIR}/src/make_key "$KEYS_DIR/$c" "$KEYS_SUBJECT" <<< '' &> /dev/null
     done
   else
     for c in releasekey platform shared media; do

@@ -5,14 +5,14 @@ cd "$ANDROIDTOP"
 codename=$EOS_DEVICE
 
 # Start the build
-        echo ">> [$(date)] Starting build for $codename, $branch branch" | tee -a "$DEBUG_LOG"
+        echo ">> [$(date)] Starting build for $codename, $BRANCH_NAME branch" | tee -a "$DEBUG_LOG"
         build_successful=false
         echo "ANDROID_JACK_VM_ARGS=${ANDROID_JACK_VM_ARGS}"
         echo "Switch to Python2"
         PYTHONBIN=/usr/bin/python2
           currentdate=$(date +%Y%m%d)
           if [ "$builddate" != "$currentdate" ]; then
-            find out/target/product/$codename -maxdepth 1 -name "e-*-$currentdate-*.zip*" -type f -exec sh ${ROOT_DIR}/fix_build_date.sh {} $currentdate $builddate \; &>> "$DEBUG_LOG"
+            find out/target/product/$codename -maxdepth 1 -name "e-*-$currentdate-*.zip*" -type f -exec sh ${VENDOR_DIR}/src/fix_build_date.sh {} $currentdate $builddate \; &>> "$DEBUG_LOG"
           fi
 
           if [ "$BUILD_DELTA" = true ]; then
@@ -26,7 +26,7 @@ codename=$EOS_DEVICE
                 echo ">> [$(date)] Delta generation for $codename failed" | tee -a "$DEBUG_LOG"
               fi
               if [ "$DELETE_OLD_DELTAS" -gt "0" ]; then
-                $PYTHONBIN ${ROOT_DIR}/clean_up.py -n $DELETE_OLD_DELTAS -V $los_ver -N 1 "$DELTA_DIR/$codename" &>> $DEBUG_LOG
+                $PYTHONBIN ${VENDOR_DIR}/src/clean_up.py -n $DELETE_OLD_DELTAS -V $los_ver -N 1 "$DELTA_DIR/$codename" &>> $DEBUG_LOG
               fi
               cd "$source_dir"
             else
@@ -49,16 +49,16 @@ codename=$EOS_DEVICE
         # Remove old zips and logs
         if [ "$DELETE_OLD_ZIPS" -gt "0" ]; then
           if [ "$ZIP_SUBDIR" = true ]; then
-            $PYTHONBIN ${ROOT_DIR}/clean_up.py -n $DELETE_OLD_ZIPS -V $los_ver -N 1 "$ZIP_DIR/$zipsubdir"
+            $PYTHONBIN ${VENDOR_DIR}/src/clean_up.py -n $DELETE_OLD_ZIPS -V $los_ver -N 1 "$ZIP_DIR/$zipsubdir"
           else
-            $PYTHONBIN ${ROOT_DIR}/clean_up.py -n $DELETE_OLD_ZIPS -V $los_ver -N 1 -c $codename "$ZIP_DIR"
+            $PYTHONBIN ${VENDOR_DIR}/src/clean_up.py -n $DELETE_OLD_ZIPS -V $los_ver -N 1 -c $codename "$ZIP_DIR"
           fi
         fi
         if [ "$DELETE_OLD_LOGS" -gt "0" ]; then
           if [ "$LOGS_SUBDIR" = true ]; then
-            $PYTHONBIN ${ROOT_DIR}/clean_up.py -n $DELETE_OLD_LOGS -V $los_ver -N 1 "$LOGS_DIR/$logsubdir"
+            $PYTHONBIN ${VENDOR_DIR}/src/clean_up.py -n $DELETE_OLD_LOGS -V $los_ver -N 1 "$LOGS_DIR/$logsubdir"
           else
-            $PYTHONBIN ${ROOT_DIR}/clean_up.py -n $DELETE_OLD_LOGS -V $los_ver -N 1 -c $codename "$LOGS_DIR"
+            $PYTHONBIN ${VENDOR_DIR}/src/clean_up.py -n $DELETE_OLD_LOGS -V $los_ver -N 1 -c $codename "$LOGS_DIR"
           fi
         fi
         if [ -f ${ROOT_DIR}/userscripts/post-build.sh ]; then
@@ -100,7 +100,7 @@ if ! [ -z "$OPENDELTA_BUILDS_JSON" ]; then
   if [ "$ZIP_SUBDIR" != true ]; then
     echo ">> [$(date)] WARNING: OpenDelta requires zip builds separated per device! You should set ZIP_SUBDIR to true"
   fi
-  $PYTHONBIN ${ROOT_DIR}/opendelta_builds_json.py "$ZIP_DIR" -o "$ZIP_DIR/$OPENDELTA_BUILDS_JSON"
+  $PYTHONBIN ${VENDOR_DIR}/src/opendelta_builds_json.py "$ZIP_DIR" -o "$ZIP_DIR/$OPENDELTA_BUILDS_JSON"
 fi
 
 if [ "$DELETE_OLD_LOGS" -gt "0" ]; then

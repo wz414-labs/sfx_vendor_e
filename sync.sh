@@ -171,10 +171,10 @@ fi
 
       if [ -n "$(grep updater_server_url packages/apps/Updater/res/values/strings.xml)" ]; then
         # "New" updater configuration: full URL (with placeholders {device}, {type} and {incr})
-        sed "s|{name}|updater_server_url|g; s|{url}|$OTA_URL/v1/{device}/{type}/{incr}|g" ${ROOT_DIR}/packages_updater_strings.xml > "$updater_url_overlay_dir/strings.xml"
+        sed "s|{name}|updater_server_url|g; s|{url}|$OTA_URL/v1/{device}/{type}/{incr}|g" ${VENDOR_DIR}/src/packages_updater_strings.xml > "$updater_url_overlay_dir/strings.xml"
       elif [ -n "$(grep conf_update_server_url_def packages/apps/Updater/res/values/strings.xml)" ]; then
         # "Old" updater configuration: just the URL
-        sed "s|{name}|conf_update_server_url_def|g; s|{url}|$OTA_URL|g" ${ROOT_DIR}/packages_updater_strings.xml > "$updater_url_overlay_dir/strings.xml"
+        sed "s|{name}|conf_update_server_url_def|g; s|{url}|$OTA_URL|g" ${VENDOR_DIR}/src/packages_updater_strings.xml > "$updater_url_overlay_dir/strings.xml"
       else
         echo ">> [$(date)] ERROR: no known Updater URL property found"
         exit 1
@@ -262,7 +262,7 @@ fi
           logsubdir=
         fi
 
-        DEBUG_LOG="$LOGS_DIR/$logsubdir/eelo-$los_ver-$builddate-$RELEASE_TYPE-$codename.log"
+        DEBUG_LOG="$LOGS_DIR/$logsubdir/e-$los_ver-$builddate-$RELEASE_TYPE-$codename.log"
 
         if [ -f ${ROOT_DIR}/userscripts/pre-build.sh ]; then
           echo ">> [$(date)] Running pre-build.sh for $codename" >> "$DEBUG_LOG"

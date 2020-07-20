@@ -2,6 +2,10 @@
 builde: preparee synce postsynce bacon finalizee
 .PHONY: builde
 
+# dirty build target without syncing the sources
+dirtye: preparee postsynce bacon finalizee
+.PHONY: dirtye
+
 # prepare & init e
 preparee:
 	$(BASH) vendor/e/src/init.sh
@@ -17,7 +21,3 @@ postsynce:
 # final tasks after building e
 finalizee:
 	$(BASH) vendor/e/finalize.sh
-
-# dirty build target without syncing the sources
-dirtye: preparee postsynce bacon finalizee
-.PHONY: dirtye

@@ -50,7 +50,7 @@ source build/envsetup.sh
     # Set a custom updater URI if a OTA URL is provided
     echo ">> [$(date)] Adding OTA URL overlay (for custom URL $OTA_URL)"
     if ! [ -z "$OTA_URL" ]; then
-      updater_url_overlay_dir="vendor/$vendor/overlay/microg/packages/apps/Updater/res/values/"
+      updater_url_overlay_dir="${VENDOR_DIR}/overlay/packages/apps/Updater/res/values"
       mkdir -p "$updater_url_overlay_dir"
 
       if [ -n "$(grep updater_server_url packages/apps/Updater/res/values/strings.xml)" ]; then

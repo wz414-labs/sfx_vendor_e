@@ -5,11 +5,11 @@
 # note: the order here is not important, each target sets its dependency
 # which then ensures the proper order processing
 eos-fresh: preparee synce postsynce bacon finalizee
-.PHONY: builde
+.PHONY: eos-fresh
 
 # mka eos build target without syncing the sources
 eos: preparee postsync-nosync bacon finalize-nosync
-.PHONY: eos-nosync
+.PHONY: eos
 
 # prepare & init e
 preparee:

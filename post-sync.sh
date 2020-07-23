@@ -125,7 +125,8 @@ source build/envsetup.sh
       fi
 
 # breakfast it
-breakfast $EOS_DEVICE
+echo BREAKFAST $EOS_DEVICE ...
+breakfast $EOS_DEVICE >> $DEBUG_LOG 2>&1
 
 # Let the Updater allow clear text traffic if explicitly set
 if [ "$EOS_OTA_CLEARTEXT" == true ];then
@@ -133,12 +134,12 @@ if [ "$EOS_OTA_CLEARTEXT" == true ];then
     if [ $? -eq 0 ];then
 	echo "$OTAMANF" | grep true >> /dev/null 2>&1
 	if [ $? -eq 0 ];then
-	    echo Skipping OTA modding as already set
+	    echo Skipping setting OTA to cleartext as already set >> $DEBUG_LOG
 	else
-	    sed -i 's/android:usesCleartextTraffic=".*"/android:usesCleartextTraffic="true"/g' $ANDROIDTOP/packages/apps/Updater/AndroidManifest.xml
+	    sed -i 's/android:usesCleartextTraffic=".*"/android:usesCleartextTraffic="true"/g' $ANDROIDTOP/packages/apps/Updater/AndroidManifest.xml 2>> $DEBUG_LOG
 	fi
     else
-	sed -i '/<application/a\\tandroid:usesCleartextTraffic="true"' $ANDROIDTOP/packages/apps/Updater/AndroidManifest.xml
+	sed -i '/<application/a\\tandroid:usesCleartextTraffic="true"' $ANDROIDTOP/packages/apps/Updater/AndroidManifest.xml 2>> $DEBUG_LOG
     fi
 fi
 

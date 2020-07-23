@@ -24,16 +24,16 @@ export BUILDSCRIPTSREPO="https://gitlab.e.foundation/steadfasterX/android_vendor
 # re-generate by outcomment the following big export line and:
 # egrep '^\w+=' vendor/e/vendorsetup.sh |cut -d = -f1 |tr "\n" " "
 
-EXPORTS="USE_CCACHE CCACHE_DIR CCACHE_SIZE BRANCH_NAME EOS_DEVICE RELEASE_TYPE REPO MIRROR OTA_URL USER_NAME USER_MAIL INCLUDE_PROPRIETARY BUILD_OVERLAY LOCAL_MIRROR CLEAN_OUTDIR CRONTAB_TIME CLEAN_AFTER_BUILD WITH_SU ANDROID_JACK_VM_ARGS CUSTOM_PACKAGES SIGN_BUILDS KEYS_SUBJECT KEYS_SUBJECT ZIP_SUBDIR LOGS_SUBDIR SIGNATURE_SPOOFING BUILD_DELTA DELETE_OLD_ZIPS DELETE_OLD_DELTAS DELETE_OLD_LOGS OPENDELTA_BUILDS_JSON"
+EXPORTS="USE_CCACHE CCACHE_DIR CCACHE_SIZE BRANCH_NAME EOS_DEVICE RELEASE_TYPE REPO MIRROR OTA_URL USER_NAME USER_MAIL INCLUDE_PROPRIETARY BUILD_OVERLAY LOCAL_MIRROR CLEAN_OUTDIR CRONTAB_TIME CLEAN_AFTER_BUILD WITH_SU ANDROID_JACK_VM_ARGS CUSTOM_PACKAGES SIGN_BUILDS KEYS_SUBJECT KEYS_SUBJECT ZIP_SUBDIR LOGS_SUBDIR SIGNATURE_SPOOFING BUILD_DELTA DELETE_OLD_ZIPS DELETE_OLD_DELTAS DELETE_OLD_LOGS OPENDELTA_BUILDS_JSON EOS_BUILD_DATE"
 
 # special call for reset all variables to their default values
 # just exec this script with the argument "--reset" and all related
 # environment variables will be unset. next time you build the env
 # vars are reset to their default (can be properly overwritten as usual ofc)
-if [ "$1" == "--reset" ];then
-    for d in $EXPORTS;do unset $d;done
-    exit 0
-fi
+if [ "$1" == "reset" ];then
+    for d in $EXPORTS;do unset $d ; export $d ;done
+    unset DEBUG_LOG
+else
 
 # Configurable environment variables
 ####################################
@@ -318,6 +318,10 @@ for ex in $EXPORTS;do
     [ "${!ex}" == "undefined" ] && declare $ex='' && test -z "${!ex}" && echo "emptied $ex >${!ex}<"
     export $ex || echo "ERROR: failed to export $ex"
 done
+
+fi # end "!= reset"
+
+DEBUG_LOG="$LOGS_DIR/e-${BRANCH_NAME}-${EOS_BUILD_DATE}-${RELEASE_TYPE}-${EOS_DEVICE}.log"
 
 ##################################
 #end script

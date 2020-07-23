@@ -1,12 +1,14 @@
 # understanding PHONY and deps:
 # https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html
 
-# mka builde will run preparee bacon and then finalizee
-eos: preparee synce postsynce bacon finalizee
+# mka eos-fresh will run preparee, synce, postsynce bacon and then finalizee
+# note: the order here is not important, each target sets its dependency
+# which then ensures the proper order processing
+eos-fresh: preparee synce postsynce bacon finalizee
 .PHONY: builde
 
-# dirty build target without syncing the sources
-eos-nosync: preparee postsync-nosync bacon finalize-nosync
+# mka eos build target without syncing the sources
+eos: preparee postsync-nosync bacon finalize-nosync
 .PHONY: eos-nosync
 
 # prepare & init e

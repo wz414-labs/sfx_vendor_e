@@ -242,6 +242,9 @@ OPENDELTA_BUILDS_JSON="$OPENDELTA_BUILDS_JSON"
 # if not defined in the device vendorsetup.sh the following will be used instead:
 : "${OPENDELTA_BUILDS_JSON:=undefined}"
 
+# set the build date
+EOS_BUILD_DATE=$(date +%Y%m%d)
+
 # You can optionally specify a USERSCRIPTS_DIR volume containing these scripts:
 #  * begin.sh, run at the very beginning
 #  * before.sh, run after the syncing and patching, before starting the builds
@@ -273,12 +276,20 @@ mkdir -p $ROOT_DIR
 mkdir -p $TMP_DIR
 mkdir -p $TMP
 mkdir -p $CCACHE_DIR
-mkdir -p $ZIP_DIR
 mkdir -p $LMANIFEST_DIR
 mkdir -p $DELTA_DIR
 mkdir -p $KEYS_DIR
-mkdir -p $LOGS_DIR
 mkdir -p $USERSCRIPTS_DIR
+
+if [ "$ZIP_SUBDIR" = true ]; then
+    ZIP_DIR=$ZIP_DIR/$EOS_DEVICE
+fi
+mkdir -p $ZIP_DIR
+
+if [ "$LOGS_SUBDIR" = true ]; then
+    LOGS_DIR="$LOGS_DIR/$EOS_DEVICE"
+fi
+mkdir -p $LOGS_DIR
 
 # Copy build files
 ############################

@@ -17,6 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# Prepare the environment
+echo ">> [$(date)] Preparing build environment"
+source $VENDOR_DIR/vendorsetup.sh reset > /dev/null
+source build/envsetup.sh > /dev/null
+
 # check required variables
 echo ">> [$(date)] DEBUG: ROOT_DIR is set to: >$ROOT_DIR<"
 if [ -z "$ROOT_DIR" ]||[ ! -d "$ROOT_DIR" ];then

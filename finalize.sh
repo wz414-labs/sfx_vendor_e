@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# get env vars
+source build/envsetup.sh
+
 # cd to working directory
 cd "$ANDROIDTOP"
 codename=$EOS_DEVICE

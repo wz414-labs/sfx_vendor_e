@@ -8,14 +8,15 @@ cd "$ANDROIDTOP"
 codename=$EOS_DEVICE
 
 # Start the build
-        echo ">> [$(date)] Starting build for $codename, $BRANCH_NAME branch" | tee -a "$DEBUG_LOG"
+        echo ">> [$(date)] finalizing build for $codename, $BRANCH_NAME branch" | tee -a "$DEBUG_LOG"
         build_successful=false
         echo "ANDROID_JACK_VM_ARGS=${ANDROID_JACK_VM_ARGS}"
         echo "Switch to Python2"
         PYTHONBIN=/usr/bin/python2
-          currentdate=$(date +%Y%m%d)
-          if [ "$builddate" != "$currentdate" ]; then
-            find out/target/product/$codename -maxdepth 1 -name "e-*-$currentdate-*.zip*" -type f -exec sh ${VENDOR_DIR}/src/fix_build_date.sh {} $currentdate $builddate \; &>> "$DEBUG_LOG"
+        currentdate=$(date +%Y%m%d)
+	  echo "EOS_BUILD_DATE: $EOS_BUILD_DATE" >> $DEBUG_LOG
+          if [ "$EOS_BUILD_DATE" != "$currentdate" ]; then
+            find out/target/product/$codename -maxdepth 1 -name "e-*-$currentdate-*.zip*" -type f -exec sh ${VENDOR_DIR}/src/fix_build_date.sh {} $currentdate $EOS_BUILD_DATE \; &>> "$DEBUG_LOG"
           fi
 
           if [ "$BUILD_DELTA" = true ]; then

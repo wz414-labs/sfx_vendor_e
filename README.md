@@ -161,11 +161,11 @@ be used by default.
 
 so a complete run would be:
 
-~~
+~~~
 source build/envsetup.sh
 lunch <your-device>
 mka eos
-~~
+~~~
 
 ## Finally
 

@@ -45,7 +45,7 @@ Then add this repo to your local manifest:
 ```
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
-    <project path="vendor/e" name="android_vendor_e" remote="e" revision="v1-pie" />
+    <project path="vendor/e" name="steadfasterX/android_vendor_e" remote="e" revision="v1-pie" />
 <manifest>
 ```
 Finally sync the sources:

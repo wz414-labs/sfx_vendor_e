@@ -13,6 +13,9 @@ eos: preparee postsync-nosync bacon finalize-nosync
 
 # prepare & init e
 preparee:
+ifeq ($(WITH_FDROID),true)
+	$(BASH) cd vendor/fdroid && ./get_packages.sh
+endif
 	$(BASH) vendor/e/src/init.sh
 
 # force sync everything needed

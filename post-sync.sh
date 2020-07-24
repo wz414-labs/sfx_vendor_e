@@ -47,27 +47,6 @@ source build/envsetup.sh
     echo ">> [$(date)] Setting \"$RELEASE_TYPE\" as release type"
     sed -i "/\$(filter .*\$(${vendor^^}_BUILDTYPE)/,+2d" "vendor/$vendor/config/common.mk"
 
-    # Set a custom updater URI if a OTA URL is provided
-    echo ">> [$(date)] Adding OTA URL overlay (for custom URL $OTA_URL)"
-    if ! [ -z "$OTA_URL" ]; then
-      updater_url_overlay_dir="${VENDOR_DIR}/overlay/packages/apps/Updater/res/values"
-      mkdir -p "$updater_url_overlay_dir"
-
-      if [ -n "$(grep updater_server_url packages/apps/Updater/res/values/strings.xml)" ]; then
-        # "New" updater configuration: full URL (with placeholders {device}, {type} and {incr})
-	echo "writing new updater conf $updater_url_overlay_dir/strings.xml" >> $DEBUG_LOG
-        sed "s|{name}|updater_server_url|g; s|{url}|$OTA_URL/v1/{device}/{type}/{incr}|g" ${VENDOR_DIR}/src/packages_updater_strings.xml > "$updater_url_overlay_dir/strings.xml" | tee -a $DEBUG_LOG
-      elif [ -n "$(grep conf_update_server_url_def packages/apps/Updater/res/values/strings.xml)" ]; then
-        # "Old" updater configuration: just the URL
-	echo "writing old updater conf $updater_url_overlay_dir/strings.xml" >> $DEBUG_LOG
-        sed "s|{name}|conf_update_server_url_def|g; s|{url}|$OTA_URL|g" ${VENDOR_DIR}/src/packages_updater_strings.xml > "$updater_url_overlay_dir/strings.xml" | tee -a $DEBUG_LOG
-      else
-        echo ">> [$(date)] ERROR: no known Updater URL property found" | tee -a $DEBUG_LOG
-        exit 1
-      fi
-      cat "$updater_url_overlay_dir/strings.xml" >> $DEBUG_LOG
-    fi
-
     if [ "$SIGN_BUILDS" = true ]; then
       echo ">> [$(date)] Adding keys path ($KEYS_DIR)"
       # Soong (Android 9+) complains if the signing keys are outside the build path

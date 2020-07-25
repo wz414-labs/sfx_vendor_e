@@ -41,10 +41,24 @@ repo init -u https://gitlab.e.foundation/e/os/android.git -b <branch>
 e.g:
 repo init -u https://gitlab.e.foundation/e/os/android.git -b v1-pie
 ```
-Then add this repo to your local manifest:
+Then create/edit your local manifest in `.repo/local_manifests/eos.xml`:
 ```
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
+    <!-- F-Droid (optional - see topic "F-Droid")
+    #####################################################-->
+    <project name="suicide-squirrel/android_vendor_fdroid" path="vendor/fdroid" remote="github" revision="eos" />
+
+    <!-- KERNEL
+    #####################################################-->
+    <project name="REPLACE WITH YOURS" path="REPLACE WITH YOURS" remote="REPLACE" revision="REPLACE" />
+
+    <!-- DEVICE TREES
+    #####################################################-->
+    <project name="REPLACE WITH YOURS" path="REPLACE WITH YOURS" remote="REPLACE" revision="REPLACE" />
+
+    <!-- /e/ vendor repo
+    #####################################################-->
     <project path="vendor/e" name="steadfasterX/android_vendor_e" remote="e" revision="v1-pie" />
 <manifest>
 ```
@@ -66,14 +80,14 @@ if it does not exists (might be the case on newer tree's where the lunch combo's
 
 you need at least to set 1 variable here:
 
- - `EOS_DEVICE`: your device's codename. that means set it identical to what you have defined for "PRODUCT_DEVICE".
+ - `export EOS_DEVICE=<codename>`: your device's codename. that means set it identical to what you have defined for "PRODUCT_DEVICE".
  
  there are more variables you *can* set here (optional), some maybe interesting examples are:
 
- - `EOS_SIGNATURE_SPOOFING`: add or add not microG, or add it restricted (see topic "Signature spoofing")
- - `EOS_BRANCH_NAME` the [release branch][release-branches] you want to build on, e.g. "v1-pie"
- - `EOS_RELEASE_TYPE`: the type of your release, e.g. "UNOFFICIAL"
- - `EOS_CUSTOM_PACKAGES`: override the list of /e/ apps to be included
+ - `export EOS_SIGNATURE_SPOOFING=no/yes/restricted`: add or add not microG, or add it restricted (see topic "Signature spoofing")
+ - `export EOS_BRANCH_NAME=v1-pie` the [release branch][release-branches] you want to build on, e.g. "v1-pie"
+ - `export EOS_RELEASE_TYPE=UNOFFICIAL`: the [type of your release][release-types], e.g. "UNOFFICIAL"
+ - `export EOS_CUSTOM_PACKAGES="....."`: override the list of /e/ apps to be included
 
 for a complete list and their default setting look in vendor/e/[vendorsetup.sh][vendorsetup].
 
@@ -86,11 +100,10 @@ and set in your `device/<vendor>/<codename>/vendorsetup.sh`!
 In order to make use of this vendor repo you have to include it in your `device/<vendor>/<codename>/lineage.mk`
 
 
-~~~
+~~
 # inherit vendor e
 $(call inherit-product, vendor/e/config/common.mk)
-~~~
-
+~~
 
 ### Signature spoofing
 
@@ -110,7 +123,7 @@ during the build process.
 
 The signature spoofing patch can be optionally included with:
 
- * `EOS_SIGNATURE_SPOOFING`: `yes` to use the original patch, `restricted` for
+ * `export EOS_SIGNATURE_SPOOFING=yes` to use the original patch, `restricted` for
     the restricted one, `no` for none of them
 
 If in doubt, use `restricted`: note that packages that requires the
@@ -132,8 +145,38 @@ four ways:
  * by downloading them from [TheMuppets repos][blobs-themuppets] (unofficial)
  * by adding them to a local_manifests definition (e.g. roomservice.xml)
 
-The fourth way is enabled by default; if you're OK with that just move on,
-otherwise set `EOS_INCLUDE_PROPRIETARY` to `true` in `device/<vendor>/<codename>/vendorsetup.sh` to pull them from TheMuppets automatically.
+/e/ expects you take care of these blobs (1,2,4 from the above) and so pulling them from TheMuppets is NOT enabled by default; 
+if you're OK with that just move on, otherwise set `EOS_INCLUDE_PROPRIETARY` to `true` in `device/<vendor>/<codename>/vendorsetup.sh` to pull them from TheMuppets automatically.
+
+### F-Droid / AuroraStore
+
+Setting up [F-Droid](https://f-droid.org) in your local manifest will allow you to pre-install F-Droid, it's Privileged Extension and also the [AuroraStore][aurora-store].
+
+Here are the things to do/know:
+
+`device/<vendor>/<codename>/<device>.mk`:
+- include F-Droid with: `WITH_FDROID := true`
+- include additional F-Droid repos with: `FDROID_EXTRA_REPOS := true` - see [additional_repos.xml][fdroid-repos]
+- add these to either PRODUCT_PACKAGES in the same mk or add these to `EOS_CUSTOM_PACKAGES` in `device/<vendor>/<codename>/vendorsetup.sh`
+
+Note: additional repos for F-Droid need to be enabled in F-Droid manually to use them. This ensures that you just have enabled what you need/want.
+
+Example config which includes F-Droid + privilege ext. + additional repos and AuroraStore:
+
+~~
+WITH_FDROID := true
+FDROID_EXTRA_REPOS := true
+PRODUCT_PACKAGES += \
+    F-Droid \
+    FDroidPrivilegedExtension \
+    additional_repos.xml \
+    AuroraStore
+~~
+
+In short:
+
+ - F-Droid: lesser apps but build from source-code which is public available (open source means trust)
+ - Aurora: Google Play client. Only use your account details here when really needed (e.g. paid apps). Better choose the *anonymous* access especially when playing around with advanced features like spoofing etc. Apps here comin directly from Google Play which also means the majority is proprietary / closed source and so cannot be verified (same apply when using google play directly, of course)
 
 ### OTA
 
@@ -172,17 +215,20 @@ be used by default.
 
 so a complete run would be:
 
-~~~
+~~
+repo -j8 sync
 source build/envsetup.sh
 lunch <your-device>
 mka eos
-~~~
+~~
 
 ## Finally
 
 enjoy your new created build and do not forget to share your work at the [e foundation forum][e-forum]
 
-
+[release-types]: https://doc.e.foundation/build-status
+[aurora-store]: https://gitlab.com/AuroraOSS/AuroraStore
+[fdroid-repos]: https://github.com/Suicide-Squirrel/android_vendor_fdroid/blob/eos/extra/additional_repos.xml
 [e-forum]: https://community.e.foundation/
 [docker-guide]: https://community.e.foundation/t/howto-build-e/
 [release-branches]: https://gitlab.e.foundation/e/os/releases/-/branches

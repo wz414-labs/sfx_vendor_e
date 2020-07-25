@@ -81,6 +81,17 @@ note: do not change variables there! just find out what the proper variable name
 and set in your `device/<vendor>/<codename>/vendorsetup.sh`!
 
 
+### lineage.mk
+
+In order to make use of this vendor repo you have to include it in your `device/<vendor>/<codename>/lineage.mk`
+
+
+~~~
+# inherit vendor e
+$(call inherit-product, vendor/e/config/common.mk)
+~~~
+
+
 ### Signature spoofing
 
 If you want to make use of [microG][microg] there are 2 options for the required [signature spoofing patch][signature-spoofing]:

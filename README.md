@@ -159,7 +159,9 @@ Here are the things to do/know:
 - include additional F-Droid repos with: `FDROID_EXTRA_REPOS := true` - see [additional_repos.xml][fdroid-repos]
 - add these to either PRODUCT_PACKAGES in the same mk or add these to `EOS_CUSTOM_PACKAGES` in `device/<vendor>/<codename>/vendorsetup.sh`
 
-Note: additional repos for F-Droid need to be enabled in F-Droid manually to use them. This ensures that you just have enabled what you need/want.
+Note1: additional repos for F-Droid need to be enabled in F-Droid manually to use them. This ensures that you just have enabled what you need/want.
+
+Note2: enabling the additional repos need either clearing the app data of F-Droid (settings) or a factory reset to make them appear [(background)][fdroid-reset]
 
 Example config which includes F-Droid + privilege ext. + additional repos and AuroraStore:
 
@@ -226,6 +228,8 @@ mka eos
 
 enjoy your new created build and do not forget to share your work at the [e foundation forum][e-forum]
 
+
+[fdroid-reset]: https://github.com/lineageos4microg/android_prebuilts_prebuiltapks/issues/8#issuecomment-453854227
 [release-types]: https://doc.e.foundation/build-status
 [aurora-store]: https://gitlab.com/AuroraOSS/AuroraStore
 [fdroid-repos]: https://github.com/Suicide-Squirrel/android_vendor_fdroid/blob/eos/extra/additional_repos.xml

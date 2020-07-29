@@ -59,7 +59,7 @@ Then create/edit your local manifest in `.repo/local_manifests/eos.xml`:
 
     <!-- /e/ vendor repo
     #####################################################-->
-    <project path="vendor/e" name="steadfasterX/android_vendor_e" remote="e" revision="v1-pie" />
+    <project path="vendor/e" name="steadfasterX/android_vendor_e" remote="e" revision="main" />
 <manifest>
 ```
 Finally sync the sources:
@@ -84,7 +84,10 @@ you need at least to set 1 variable here:
  
  there are more variables you *can* set here (optional), some maybe interesting examples are:
 
- - `export EOS_SIGNATURE_SPOOFING=no/yes/restricted`: add or add not microG, or add it restricted (see topic "Signature spoofing")
+ - `export EOS_USE_CCACHE=true|false`
+ - `export EOS_CCACHE_DIR=<directory>`
+ - `export EOS_CCACHE_SIZE=<size>G`
+ - `export EOS_SIGNATURE_SPOOFING=no|yes|restricted`: add or add not microG, or add it restricted (see topic "Signature spoofing")
  - `export EOS_BRANCH_NAME=v1-pie` the [release branch][release-branches] you want to build on, e.g. "v1-pie"
  - `export EOS_RELEASE_TYPE=UNOFFICIAL`: the [type of your release][release-types], e.g. "UNOFFICIAL"
  - `export EOS_CUSTOM_PACKAGES="....."`: override the list of /e/ apps to be included
@@ -100,10 +103,10 @@ and set in your `device/<vendor>/<codename>/vendorsetup.sh`!
 In order to make use of this vendor repo you have to include it in your `device/<vendor>/<codename>/lineage.mk`
 
 
-~~
+~~~
 # inherit vendor e
 $(call inherit-product, vendor/e/config/common.mk)
-~~
+~~~
 
 ### Signature spoofing
 
@@ -165,7 +168,7 @@ Note2: enabling the additional repos need either clearing the app data of F-Droi
 
 Example config which includes F-Droid + privilege ext. + additional repos and AuroraStore:
 
-~~
+~~~
 WITH_FDROID := true
 FDROID_EXTRA_REPOS := true
 PRODUCT_PACKAGES += \
@@ -173,7 +176,7 @@ PRODUCT_PACKAGES += \
     FDroidPrivilegedExtension \
     additional_repos.xml \
     AuroraStore
-~~
+~~~
 
 In short:
 
@@ -194,7 +197,7 @@ By default, builds are signed with your own keys - created automatically on buil
 If you want to sign your builds with the default test-keys (**not recommended**) just
 setup your device tree vendorsetup.sh with:
 
- * `EOS_SIGN_BUILDS`: set to `false` to sign the builds with the test-keys
+ * `EOS_SIGN_BUILDS`: set to `false` to sign the builds with the *test-keys* instead of your own
 
 
 ## Start building
@@ -217,12 +220,12 @@ be used by default.
 
 so a complete run would be:
 
-~~
+~~~
 repo -j8 sync
 source build/envsetup.sh
 lunch <your-device>
 mka eos
-~~
+~~~
 
 ## Finally
 

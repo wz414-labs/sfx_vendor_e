@@ -275,7 +275,7 @@ mkdir -p $SRC_DIR
 mkdir -p $ROOT_DIR
 mkdir -p $TMP_DIR
 mkdir -p $TMP
-mkdir -p $CCACHE_DIR
+[ "$USE_CCACHE" == "1" ] && mkdir -p $CCACHE_DIR
 mkdir -p $LMANIFEST_DIR
 mkdir -p $DELTA_DIR
 mkdir -p $KEYS_DIR

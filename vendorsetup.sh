@@ -69,7 +69,7 @@ BRANCH_NAME="$EOS_BRANCH_NAME"
 # Environment for the device name
 # if not set as an environment variable the following will be used instead:
 # define EOS_DEVICE_TARGET in your device/<vendor>/<codename>/vendorsetup.sh.
-EOS_DEVICE="$(get_build_var TARGET_DEVICE)"
+EOS_DEVICE="$EOS_DEVICE"
 # if not defined in the device vendorsetup.sh the following will be used instead:
 : "${EOS_DEVICE:=}"
 

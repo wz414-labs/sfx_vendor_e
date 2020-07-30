@@ -88,7 +88,7 @@ RELEASE_TYPE="$EOS_RELEASE_TYPE"
 # define EOS_REPO in your device/<vendor>/<codename>/vendorsetup.sh.
 REPO="$EOS_REPO"
 # if not defined in the device vendorsetup.sh the following will be used instead:
-: "${REPO:=https://gitlab.e.foundation/e/os/android.git}"
+: "${REPO:=https://gitlab.e.foundation/e/os/releases.git}"
 
 # Repo use for build
 # define EOS_MIRROR in your device/<vendor>/<codename>/vendorsetup.sh.

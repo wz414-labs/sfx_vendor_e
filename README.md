@@ -35,11 +35,16 @@ Some / all of the above matches on you? Well then this is for you!
 To get started with Android and/or /e/, you'll need to get
 familiar with [Repo](https://source.android.com/source/using-repo.html) and [Version Control with Git](https://source.android.com/source/version-control.html).
 
-To initialize your local repository using the /e/ trees, use a command like this:
+To initialize your local repository using the /e/ trees, use either [a tag (you now what you get)][release-tags] or a [branch (the latest code of a branch)][release-branches]:
 ```
-repo init -u https://gitlab.e.foundation/e/os/android.git -b <branch>
+repo init -u https://gitlab.e.foundation/e/os/releases.git -b refs/tags/<tag>
+or
+repo init -u https://gitlab.e.foundation/e/os/releases.git -b <branch>
+
 e.g:
-repo init -u https://gitlab.e.foundation/e/os/android.git -b v1-pie
+repo init -u https://gitlab.e.foundation/e/os/releases.git -b refs/tags/v0.9.4-pie
+repo init -u https://gitlab.e.foundation/e/os/releases.git -b v1-pie
+
 ```
 Then create/edit your local manifest in `.repo/local_manifests/eos.xml`:
 ```
@@ -233,12 +238,13 @@ enjoy your new created build and do not forget to share your work at the [e foun
 
 
 [fdroid-reset]: https://github.com/lineageos4microg/android_prebuilts_prebuiltapks/issues/8#issuecomment-453854227
-[release-types]: https://doc.e.foundation/build-status
 [aurora-store]: https://gitlab.com/AuroraOSS/AuroraStore
 [fdroid-repos]: https://github.com/Suicide-Squirrel/android_vendor_fdroid/blob/eos/extra/additional_repos.xml
 [e-forum]: https://community.e.foundation/
 [docker-guide]: https://community.e.foundation/t/howto-build-e/
 [release-branches]: https://gitlab.e.foundation/e/os/releases/-/branches
+[release-tags]: https://gitlab.e.foundation/e/os/releases/-/tags
+[release-types]: https://doc.e.foundation/build-status
 [customOTA]: https://community.e.foundation/t/howto-create-your-custom-ota-server/19154
 [vendorsetup]: vendorsetup.sh
 [signature-spoofing]: https://github.com/microg/android_packages_apps_GmsCore/wiki/Signature-Spoofing

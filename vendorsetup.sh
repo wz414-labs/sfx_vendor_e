@@ -115,7 +115,7 @@ USER_NAME=$(git config --global --get user.name)
 USER_MAIL=$(git config --global --get user.email)
 
 # verify git config
-if [ -z "$USER_NAME" ]||[ -z "$USER_MAIL" ];then echo "ERROR: Please set USER_NAME and USER_MAIL as an environment variable or use 'git config --global' to set it once"; exit 4;fi
+if [ -z "$USER_NAME" ]||[ -z "$USER_MAIL" ];then echo "ERROR: Please set EOS_GIT_USER_NAME and EOS_GIT_USER_MAIL in device/<vendor>/<codename>/vendorsetup.sh or use 'git config --global' to set it once"; exit 4;fi
 
 # Include proprietary files, downloaded automatically from github.com/TheMuppets/
 # Only some branches are supported

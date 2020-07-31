@@ -262,14 +262,15 @@ OPENDELTA_BUILDS_JSON="$OPENDELTA_BUILDS_JSON"
 # set the build date
 EOS_BUILD_DATE=$(date +%Y%m%d)
 
-# You can optionally specify a USERSCRIPTS_DIR volume containing these scripts:
-#  * begin.sh, run at the very beginning
-#  * before.sh, run after the syncing and patching, before starting the builds
-#  * pre-build.sh, run before the build of every device
-#  * post-build.sh, run after the build of every device
-#  * end.sh, run at the very end
-# Each script will be run in $SRC_DIR and must be owned and writeable only by
-# root
+# Force a full sync including a reset of every repo to a clean state
+# define EOS_SYNC_RESET in your device/<vendor>/<codename>/vendorsetup.sh.
+# 0 means no sync/reset, 1 means everything will be hard reset and synced
+SYNC_RESET="$EOS_SYNC_RESET"
+: "${SYNC_RESET:=0}"
+
+#############################################################################################
+# END OF USER VARS
+#############################################################################################
 
 # set debug log
 ############################

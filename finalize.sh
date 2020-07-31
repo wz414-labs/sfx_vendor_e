@@ -1,13 +1,9 @@
 #!/bin/bash
 
-# get env vars
-source build/envsetup.sh
-
 # cd to working directory
 cd "$ANDROIDTOP"
 codename=$EOS_DEVICE
 
-# Start the build
         echo ">> [$(date)] finalizing build for $codename, $BRANCH_NAME branch" | tee -a "$DEBUG_LOG"
         build_successful=false
         echo "ANDROID_JACK_VM_ARGS=${ANDROID_JACK_VM_ARGS}"
@@ -86,7 +82,11 @@ codename=$EOS_DEVICE
           umount "$TMP_DIR/merged"
         fi
 
-        if [ "$CLEAN_AFTER_BUILD" = true ]; then
+        if [ "$CLEAN_AFTER_BUILD" == "true" ]; then
+	    echo -e '\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+	    echo      '********          /e/ - CLEAN OUT DIR (after)               ********'
+	    echo -e   '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'
+
           echo ">> [$(date)] Cleaning source dir for device $codename" | tee -a "$DEBUG_LOG"
           if [ "$BUILD_OVERLAY" = true ]; then
             cd "$TMP_DIR" && rm -rf ./*

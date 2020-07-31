@@ -29,7 +29,7 @@ export BUILDSCRIPTSREPO="https://gitlab.e.foundation/steadfasterX/android_vendor
 # re-generate by outcomment the following big export line and:
 # egrep '^\w+=' vendor/e/vendorsetup.sh |cut -d = -f1 |tr "\n" " "
 
-EXPORTS="USE_CCACHE CCACHE_DIR CCACHE_SIZE BRANCH_NAME EOS_DEVICE RELEASE_TYPE REPO MIRROR OTA_URL USER_NAME USER_MAIL INCLUDE_PROPRIETARY BUILD_OVERLAY LOCAL_MIRROR CLEAN_OUTDIR CRONTAB_TIME CLEAN_AFTER_BUILD WITH_SU ANDROID_JACK_VM_ARGS CUSTOM_PACKAGES SIGN_BUILDS KEYS_SUBJECT KEYS_SUBJECT ZIP_SUBDIR LOGS_SUBDIR SIGNATURE_SPOOFING BUILD_DELTA DELETE_OLD_ZIPS DELETE_OLD_DELTAS DELETE_OLD_LOGS OPENDELTA_BUILDS_JSON EOS_BUILD_DATE TMP_DIR ZIP_DIR"
+EXPORTS="USE_CCACHE CCACHE_DIR CCACHE_SIZE BRANCH_NAME EOS_DEVICE RELEASE_TYPE REPO MIRROR OTA_URL USER_NAME USER_MAIL INCLUDE_PROPRIETARY BUILD_OVERLAY LOCAL_MIRROR CLEAN_OUTDIR CRONTAB_TIME CLEAN_AFTER_BUILD CLEAN_BEFORE_BUILD WITH_SU ANDROID_JACK_VM_ARGS CUSTOM_PACKAGES SIGN_BUILDS KEYS_SUBJECT KEYS_SUBJECT ZIP_SUBDIR LOGS_SUBDIR SIGNATURE_SPOOFING BUILD_DELTA DELETE_OLD_ZIPS DELETE_OLD_DELTAS DELETE_OLD_LOGS OPENDELTA_BUILDS_JSON EOS_BUILD_DATE TMP_DIR ZIP_DIR SYNC_RESET"
 
 # special call for reset all variables to their default values
 # just exec this script with the argument "--reset" and all related
@@ -137,10 +137,16 @@ LOCAL_MIRROR="$EOS_LOCAL_MIRROR"
 : "${LOCAL_MIRROR:=false}"
 
 # If you want to preserve old ZIPs set this to 'false'
-# define EOS_CLEAN_OUTDIR in your device/<vendor>/<codename>/vendorsetup.sh.
-CLEAN_OUTDIR="$EOS_CLEAN_OUTDIR"
+# define EOS_CLEAN_ZIPDIR in your device/<vendor>/<codename>/vendorsetup.sh.
+CLEAN_OUTDIR_BEFORE="$EOS_CLEAN_BEFORE_BUILD"
 # if not defined in the device vendorsetup.sh the following will be used instead:
-: "${CLEAN_OUTDIR:=false}"
+: "${CLEAN_OUTDIR_BEFORE:=false}"
+
+# If you want to preserve old ZIPs set this to 'false'
+# define EOS_CLEAN_ZIPDIR in your device/<vendor>/<codename>/vendorsetup.sh.
+CLEAN_ZIPDIR="$EOS_CLEAN_ZIPDIR"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${CLEAN_ZIPDIR:=false}"
 
 # Change this cron rule to what fits best for you
 # Use 'now' to start the build immediately
@@ -155,6 +161,12 @@ CRONTAB_TIME="$EOS_CRONTAB_TIME"
 CLEAN_AFTER_BUILD="$EOS_CLEAN_AFTER_BUILD"
 # if not defined in the device vendorsetup.sh the following will be used instead:
 : "${CLEAN_AFTER_BUILD:=false}"
+
+# Clean artifacts output after each build
+# define EOS_CLEAN_BEFORE_BUILD in your device/<vendor>/<codename>/vendorsetup.sh.
+CLEAN_BEFORE_BUILD="$EOS_CLEAN_BEFORE_BUILD"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${CLEAN_BEFORE_BUILD:=false}"
 
 # Provide root capabilities builtin inside the ROM (see http://lineageos.org/Update-and-Build-Prep/)
 # define EOS_WITH_SU in your device/<vendor>/<codename>/vendorsetup.sh.
@@ -259,19 +271,9 @@ EOS_BUILD_DATE=$(date +%Y%m%d)
 # Each script will be run in $SRC_DIR and must be owned and writeable only by
 # root
 
-# Create Volume entry points
+# set debug log
 ############################
-# VOLUME $MIRROR_DIR
-# VOLUME $SRC_DIR
-# VOLUME $TMP_DIR
-# VOLUME $CCACHE_DIR
-# VOLUME $ZIP_DIR
-# VOLUME $LMANIFEST_DIR
-# VOLUME $DELTA_DIR
-# VOLUME $KEYS_DIR
-# VOLUME $LOGS_DIR
-# VOLUME $USERSCRIPTS_DIR
-# VOLUME /root/.ssh
+export DEBUG_LOG="$LOGS_DIR/e-${BRANCH_NAME}-${EOS_BUILD_DATE}-${RELEASE_TYPE}-${EOS_DEVICE}.log"
 
 # Create missing directories
 ############################
@@ -335,9 +337,49 @@ for ex in $EXPORTS;do
     export $ex || echo "ERROR: failed to export $ex"
 done
 
+# clean when requested
+##################################
+
+if [ "$CLEAN_ZIPDIR" == "true" ]; then
+    echo -e '\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+    echo      '********                /e/ - CLEAN ZIPDIR                 ********'
+    echo -e   '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'
+    echo ">> [$(date)] Cleaning '$ZIP_DIR'"
+    rm -rf "$ZIP_DIR/"*
+    export CLEAN_ZIPDIR=false
+fi
+
+if [ "$CLEAN_BEFORE_BUILD" == "true" ]; then
+    echo -e '\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+    echo      '********          /e/ - CLEAN OUT DIR (before)              ********'
+    echo -e   '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'
+    echo ">> [$(date)] Cleaning source dir for device $EOS_DEVICE" | tee -a "$DEBUG_LOG"
+    mka clean
+    export CLEAN_BEFORE_BUILD=false
+fi
+
+# init
+##################################
+
+$VENDOR_DIR/init.sh
+
+
+# sync/reset when requested
+##################################
+
+[ "$SYNC_RESET" -eq 1 ] && $VENDOR_DIR/sync.sh && export SYNC_RESET=0 EOS_SYNC_RESET=0
+
+
+# postsync tasks
+##################################
+
+$VENDOR_DIR/post-sync.sh
+
+
+
+
 fi # end "!= reset"
 
-DEBUG_LOG="$LOGS_DIR/e-${BRANCH_NAME}-${EOS_BUILD_DATE}-${RELEASE_TYPE}-${EOS_DEVICE}.log"
 
 ##################################
 #end script

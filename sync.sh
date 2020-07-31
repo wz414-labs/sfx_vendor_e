@@ -17,24 +17,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# get env vars
-source build/envsetup.sh
+echo -e '\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+echo      '********                /e/ - RESET & SYNC                  ********'
+echo -e   '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'
 
 repo_log="$LOGS_DIR/repo-$(date +%Y%m%d).log"
 
 # cd to working directory
 cd "$ANDROIDTOP"
-
-if [ -f ${ROOT_DIR}/userscripts/begin.sh ]; then
-  echo ">> [$(date)] Running begin.sh"
-  ${ROOT_DIR}/userscripts/begin.sh
-fi
-
-# If requested, clean the OUT dir in order to avoid clutter
-if [ "$CLEAN_OUTDIR" = true ]; then
-  echo ">> [$(date)] Cleaning '$ZIP_DIR'"
-  rm -rf "$ZIP_DIR/"*
-fi
 
 sync_successful=true
 

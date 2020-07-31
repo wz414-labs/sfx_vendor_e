@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Docker init script
 # Copyright (c) 2017 Julian Xhokaxhiu
 # Copyright (C) 2017-2018 Nicola Corna <nicola@corna.info>
 #
@@ -17,10 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+echo -e '\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+echo      '********                    /e/ - INIT                      ********'
+echo -e   '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'
+
 # Prepare the environment
 echo ">> [$(date)] Preparing build environment"
 source $VENDOR_DIR/vendorsetup.sh reset > /dev/null
-source build/envsetup.sh > /dev/null
 
 # check required variables
 echo ">> [$(date)] DEBUG: ROOT_DIR is set to: >$ROOT_DIR<"

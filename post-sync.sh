@@ -1,8 +1,9 @@
 #!/bin/bash
 ##################################################################################################
 
-# get env vars
-source build/envsetup.sh
+echo -e '\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+echo      '********                  /e/ - POSTSYNC                    ********'
+echo -e   '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'
 
     android_version=$(sed -n -e 's/^\s*PLATFORM_VERSION\.OPM1 := //p' build/core/version_defaults.mk)
     if [ -z $android_version ]; then
@@ -109,10 +110,6 @@ source build/envsetup.sh
         PYTHONBIN=/usr/bin/python3
       fi
 
-# breakfast it
-echo BREAKFAST $EOS_DEVICE ...
-breakfast $EOS_DEVICE >> $DEBUG_LOG 2>&1
-
 # Let the Updater allow clear text traffic if explicitly set
 if [ "$EOS_OTA_CLEARTEXT" == true ];then
     OTAMANF=$(grep "android:usesCleartextTraffic=" $ANDROIDTOP/packages/apps/Updater/AndroidManifest.xml)
@@ -127,5 +124,3 @@ if [ "$EOS_OTA_CLEARTEXT" == true ];then
 	sed -i '/<application/a\\tandroid:usesCleartextTraffic="true"' $ANDROIDTOP/packages/apps/Updater/AndroidManifest.xml 2>> $DEBUG_LOG
     fi
 fi
-
-

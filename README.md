@@ -207,28 +207,18 @@ setup your device tree vendorsetup.sh with:
 
 ## Start building
 
-This repo provides 2 new build targets:
+This repo provides a new build target:
 
 `mka eos`:
 
-    does a full build without any sync
-
-`mka eos-fresh`:
-
-    does a full build but sync all sources before
-    (think of it like a git reset --hard on any repo + sync everything
-    so never use that if you have any uncommitted local changes..)
-
-
-`mka eos` is the closest to a classic brunch/mka otapackage and should
-be used by default.
+    build /e/ ;)
 
 so a complete run would be:
 
 ~~~
 repo -j8 sync
 source build/envsetup.sh
-lunch <your-device>
+breakfast <your-device> (or lunch <your-device_releasetype>)
 mka eos
 ~~~
 

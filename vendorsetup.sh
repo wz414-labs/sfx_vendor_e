@@ -38,7 +38,12 @@ EXPORTS="USE_CCACHE CCACHE_DIR CCACHE_SIZE BRANCH_NAME EOS_DEVICE RELEASE_TYPE R
 if [ "$1" == "reset" ];then
     for d in $EXPORTS;do unset $d ; export $d ;done
     unset DEBUG_LOG
+    export RESET_DONE=true
 else
+
+# reset build env
+[ $RESET_DONE != "true" ] && source $0 reset && source build/envsetup.sh
+#source $VENDOR_DIR/init.sh
 
 # Configurable environment variables
 ####################################
@@ -135,12 +140,6 @@ BUILD_OVERLAY="$EOS_BUILD_OVERLAY"
 LOCAL_MIRROR="$EOS_LOCAL_MIRROR"
 # if not defined in the device vendorsetup.sh the following will be used instead:
 : "${LOCAL_MIRROR:=false}"
-
-# If you want to preserve old ZIPs set this to 'false'
-# define EOS_CLEAN_ZIPDIR in your device/<vendor>/<codename>/vendorsetup.sh.
-CLEAN_OUTDIR_BEFORE="$EOS_CLEAN_BEFORE_BUILD"
-# if not defined in the device vendorsetup.sh the following will be used instead:
-: "${CLEAN_OUTDIR_BEFORE:=false}"
 
 # If you want to preserve old ZIPs set this to 'false'
 # define EOS_CLEAN_ZIPDIR in your device/<vendor>/<codename>/vendorsetup.sh.
@@ -286,7 +285,7 @@ mkdir -p $TMP
 [ "$USE_CCACHE" == "1" ] && mkdir -p $CCACHE_DIR
 mkdir -p $LMANIFEST_DIR
 mkdir -p $DELTA_DIR
-mkdir -p $KEYS_DIR
+[ ${SIGN_BUILDS} == "true" ] && mkdir -p $KEYS_DIR
 mkdir -p $USERSCRIPTS_DIR
 
 if [ "$ZIP_SUBDIR" = true ]; then

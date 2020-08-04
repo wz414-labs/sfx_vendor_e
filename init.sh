@@ -22,7 +22,6 @@ echo -e   '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\
 
 # Prepare the environment
 echo ">> [$(date)] Preparing build environment"
-source $VENDOR_DIR/vendorsetup.sh reset > /dev/null
 
 # check required variables
 echo ">> [$(date)] DEBUG: ROOT_DIR is set to: >$ROOT_DIR<"

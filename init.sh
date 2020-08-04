@@ -44,7 +44,7 @@ fi
 git config --global user.name $USER_NAME
 git config --global user.email $USER_MAIL
 
-if [ "$SIGN_BUILDS" = true ]; then
+if [ "$SIGN_BUILDS" == "true" ]; then
   if [ -z "$(ls -A "$KEYS_DIR")" ]; then
     echo ">> [$(date)] SIGN_BUILDS = true but empty \$KEYS_DIR, generating new keys"
     for c in releasekey platform shared media; do

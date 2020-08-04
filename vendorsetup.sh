@@ -39,11 +39,11 @@ if [ "$1" == "reset" ];then
     for d in $EXPORTS;do unset $d ; export $d ;done
     unset DEBUG_LOG
     export RESET_DONE=true
+    echo ">> [$(date)] Reset variables finished"
 else
 
 # reset build env
-[ $RESET_DONE != "true" ] && source $0 reset && source build/envsetup.sh
-#source $VENDOR_DIR/init.sh
+[ "$RESET_DONE" != "true" ] && source $VENDOR_DIR/vendorsetup.sh reset && source build/envsetup.sh && break 
 
 # Configurable environment variables
 ####################################
@@ -416,6 +416,10 @@ $VENDOR_DIR/post-sync.sh
 
 
 
+# ensure next run reset will work
+##################################
+
+export RESET_DONE=false
 
 fi # end "!= reset"
 

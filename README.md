@@ -77,6 +77,17 @@ repo -j8 sync
 
 ## Setup /e/
 
+### root-less support
+
+One of the major concerns with the docker guide is that everything runs as root - so with full permissions.
+
+Using this approach instead let you use a normal user account when you set the following rule in sudoers. It is not required but will let you auto-change to the correct JAVA version during a build:
+
+`<YOURUSERNAME>      ALL=NOPASSWD: /usr/sbin/update-java-alternatives *`
+
+You can leave even that out if you switch your java version manually, of course. When building for several versions on the same sources it is quite handy though ;)
+
+
 ### vendorsetup.sh (your device tree)
 
 you find that one here: `device/<vendor>/<codename>/vendorsetup.sh`

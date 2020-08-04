@@ -27,9 +27,15 @@ export DEBIAN_FRONTEND=noninteractive
 export BUILDSCRIPTSREPO="https://gitlab.e.foundation/steadfasterX/android_vendor_e.git"
 
 # re-generate by outcomment the following big export line and:
-# egrep '^\w+=' vendor/e/vendorsetup.sh |cut -d = -f1 |tr "\n" " "
+# EXPORTS_KEYS) egrep '^\w+=' vendor/e/vendorsetup.sh |cut -d = -f1 |tr "\n" " "
+# EXPORTS_VALS) egrep '^\w+="\$' vendor/e/vendorsetup.sh |cut -d = -f2 | tr -d '"' |tr -d '$' |tr "\n" ' '
 
-EXPORTS="USE_CCACHE CCACHE_DIR CCACHE_SIZE BRANCH_NAME EOS_DEVICE RELEASE_TYPE REPO MIRROR OTA_URL USER_NAME USER_MAIL INCLUDE_PROPRIETARY BUILD_OVERLAY LOCAL_MIRROR CRONTAB_TIME CLEAN_AFTER_BUILD CLEAN_BEFORE_BUILD WITH_SU ANDROID_JACK_VM_ARGS CUSTOM_PACKAGES SIGN_BUILDS KEYS_SUBJECT KEYS_SUBJECT ZIP_SUBDIR LOGS_SUBDIR SIGNATURE_SPOOFING BUILD_DELTA DELETE_OLD_ZIPS DELETE_OLD_DELTAS DELETE_OLD_LOGS OPENDELTA_BUILDS_JSON EOS_BUILD_DATE TMP_DIR ZIP_DIR SYNC_RESET"
+EXPORTS_KEYS="USE_CCACHE CCACHE_DIR CCACHE_SIZE BRANCH_NAME EOS_DEVICE RELEASE_TYPE REPO MIRROR OTA_URL USER_NAME USER_MAIL INCLUDE_PROPRIETARY BUILD_OVERLAY LOCAL_MIRROR CRONTAB_TIME CLEAN_AFTER_BUILD CLEAN_BEFORE_BUILD WITH_SU ANDROID_JACK_VM_ARGS CUSTOM_PACKAGES SIGN_BUILDS KEYS_SUBJECT KEYS_SUBJECT ZIP_SUBDIR LOGS_SUBDIR SIGNATURE_SPOOFING BUILD_DELTA DELETE_OLD_ZIPS DELETE_OLD_DELTAS DELETE_OLD_LOGS OPENDELTA_BUILDS_JSON EOS_BUILD_DATE TMP_DIR ZIP_DIR SYNC_RESET"
+
+EXPORTS_VALS="EOS_TMP_DIR EOS_ZIP_DIR EOS_USE_CCACHE EOS_CCACHE_DIR EOS_CCACHE_SIZE EOS_BRANCH_NAME EOS_DEVICE EOS_RELEASE_TYPE EOS_REPO EOS_MIRROR EOS_OTA_URL EOS_INCLUDE_PROPRIETARY EOS_BUILD_OVERLAY EOS_LOCAL_MIRROR EOS_CLEAN_ZIPDIR EOS_CRONTAB_TIME EOS_CLEAN_AFTER_BUILD EOS_CLEAN_BEFORE_BUILD EOS_WITH_SU EOS_ANDROID_JACK_VM_ARGS EOS_CUSTOM_PACKAGES EOS_SIGN_BUILDS EOS_KEYS_SUBJECT EOS_ZIP_SUBDIR EOS_LOGS_SUBDIR EOS_SIGNATURE_SPOOFING EOS_BUILD_DELTA EOS_DELETE_OLD_ZIPS EOS_DELETE_OLD_DELTAS EOS_DELETE_OLD_LOGS OPENDELTA_BUILDS_JSON EOS_SYNC_RESET"
+
+# merge all exports
+EXPORTS="$EXPORTS_KEYS $EXPORTS_VALS"
 
 # special call for reset all variables to their default values
 # just exec this script with the argument "--reset" and all related
@@ -43,7 +49,7 @@ if [ "$1" == "reset" ];then
 else
 
 # reset build env
-[ "$RESET_DONE" != "true" ] && source $VENDOR_DIR/vendorsetup.sh reset && source build/envsetup.sh && break 
+[ "$RESET_DONE" != "true" ] && source $VENDOR_DIR/vendorsetup.sh reset && source build/envsetup.sh && break
 
 # Configurable environment variables
 ####################################
@@ -327,7 +333,7 @@ fi
 # export all environment variables
 ##################################
 
-for ex in $EXPORTS;do
+for ex in $EXPORTS_KEYS;do
     LERR=0
     # check if each variable is set
     [ -z "${!ex}" ] && echo "ERROR: required variable $ex is not set!" && LERR=1
@@ -336,7 +342,11 @@ for ex in $EXPORTS;do
     [ "${!ex}" == "undefined" ] && declare $ex='' && test -z "${!ex}" && echo "emptied $ex >${!ex}<"
     export $ex || echo "ERROR: failed to export $ex"
 done
-
+for ex in $EXPORTS_VALS;do
+    # empty those vars which are allowed to be empty (keyword: undefined is set)
+    [ "${!ex}" == "undefined" ] && declare $ex='' && test -z "${!ex}" && echo "emptied $ex >${!ex}<"
+    export $ex || echo "ERROR: failed to export $ex"
+done
 
 # set Java version
 ##################################

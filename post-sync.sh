@@ -35,10 +35,10 @@ echo -e   '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\
     [ $? -ne 0 ] && sed -i "1s;^;PRODUCT_PACKAGE_OVERLAYS := vendor/$vendor/overlay/microg\n;" "vendor/$vendor/config/common.mk"
 
     # change version on the dynamic branch
-    if [ "$BRANCH_NAME" == "v1-pie" ];then
+    if [[ "$BRANCH_NAME" =~ v1-.* ]];then
         sed -i -E 's/^(\s*PRODUCT_VERSION_MAJOR = )([0-9]+)/\11/g1' "vendor/$vendor/config/common.mk"
         sed -i -E 's/^(\s*PRODUCT_VERSION_MINOR = )(.*)/\10/g1' "vendor/$vendor/config/common.mk"
-        sed -i -E 's/^(\s*PRODUCT_VERSION_MAINTENANCE = )([0-9]+)/\1x/g1' "vendor/$vendor/config/common.mk"
+        sed -i -E 's/^(\s*PRODUCT_VERSION_MAINTENANCE := )([0-9]+)/\1999/g1' "vendor/$vendor/config/common.mk"
     fi
 
     # parse ROM version

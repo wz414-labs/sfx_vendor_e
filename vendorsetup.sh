@@ -357,18 +357,20 @@ echo -e '\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
 echo      '********                   /e/ - set JAVA                   ********'
 echo -e   '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'
 echo ">> [$(date)] Determining correct OpenJDK version for $BRANCH_NAME"
+
 case $BRANCH_NAME in
-    *-pie|*-oreo) 	NEEDEDJAVA=java-8-openjdk-amd64 ;;
-    *-nougat)		NEEDEDJAVA=java-7-oracle ;;
+    *-pie)	JAVABASE="$ANDROIDTOP/prebuilts/jdk/jdk9/linux-x86" ;;	# prebuilt
+    *-oreo) 	NEEDEDJAVA=java-8-openjdk-amd64 ; JAVABASE=/usr/lib/jvm/$NEEDEDJAVA ;;
+    *-nougat)	NEEDEDJAVA=java-7-oracle; JAVABASE=/usr/lib/jvm/$NEEDEDJAVA;;
     *)
 	echo "WARNING: cannot determine best java version for $BRANCH_NAME!"
     ;;
 esac
-JAVACBIN=/usr/lib/jvm/$NEEDEDJAVA/bin/javac
+JAVACBIN=$JAVABASE/bin/javac
 
 echo "... checking if we need to switch Java version"
 CURRENTJ=$(java -version 2>&1|grep version)
-NEWJBIN=$(/usr/lib/jvm/$NEEDEDJAVA/bin/java -version 2>&1|grep version)
+NEWJBIN=$($JAVABASE/bin/java -version 2>&1|grep version)
 if [ "x$CURRENTJ" == "x$NEWJBIN" ];then
 	echo "... skipping java switch because we already have the wanted version ($CURRENTJ == $NEWJBIN)"
 else

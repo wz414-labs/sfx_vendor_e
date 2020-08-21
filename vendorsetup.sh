@@ -37,6 +37,9 @@ EXPORTS_VALS="EOS_TMP_DIR EOS_ZIP_DIR EOS_USE_CCACHE EOS_CCACHE_DIR EOS_CCACHE_S
 # merge all exports
 EXPORTS="$EXPORTS_KEYS $EXPORTS_VALS"
 
+# reset build time (req for OTA + dirty builds)
+find $ANDROIDTOP/out/target/product -name build.prop -delete
+
 # special call for reset all variables to their default values
 # just exec this script with the argument "--reset" and all related
 # environment variables will be unset. next time you build the env

@@ -1,7 +1,8 @@
 #!/bin/bash
-
+#############################################################################################################
 # Copyright (c) 2017 Julian Xhokaxhiu
 # Copyright (C) 2017-2018 Nicola Corna <nicola@corna.info>
+# Copyright (C) 2020 eCorp Romain HUNAULT <romain.hunaul@e.email>, steadfasterX <steadfasterX@binbash.rocks>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#############################################################################################################
 
 echo -e '\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
 echo      '********                    /e/ - INIT                      ********'
@@ -46,12 +48,12 @@ git config --global user.email $USER_MAIL
 if [ "$SIGN_BUILDS" == "true" ]; then
   if [ -z "$(ls -A "$KEYS_DIR")" ]; then
     echo ">> [$(date)] SIGN_BUILDS = true but empty \$KEYS_DIR, generating new keys"
-    for c in releasekey platform shared media; do
+    for c in releasekey platform shared media networkstack; do
       echo ">> [$(date)]  Generating $c..."
       ${VENDOR_DIR}/src/make_key "$KEYS_DIR/$c" "$KEYS_SUBJECT" <<< '' &> /dev/null
     done
   else
-    for c in releasekey platform shared media; do
+    for c in releasekey platform shared media networkstack; do
       for e in pk8 x509.pem; do
         if [ ! -f "$KEYS_DIR/$c.$e" ]; then
           echo ">> [$(date)] SIGN_BUILDS = true and not empty \$KEYS_DIR, but \"\$KEYS_DIR/$c.$e\" is missing"

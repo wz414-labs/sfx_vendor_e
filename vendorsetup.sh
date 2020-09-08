@@ -283,7 +283,7 @@ mkdir -p $SRC_DIR
 mkdir -p $ROOT_DIR
 mkdir -p $TMP_DIR
 mkdir -p $TMP
-[ "$USE_CCACHE" == "1" ] && mkdir -p $CCACHE_DIR
+[ "$USE_CCACHE" == "1" ] && mkdir -p $CCACHE_DIR  && export CCACHE_EXEC=/usr/bin/ccache
 mkdir -p $LMANIFEST_DIR
 [ ${SIGN_BUILDS} == "true" ] && mkdir -p $KEYS_DIR
 mkdir -p $USERSCRIPTS_DIR

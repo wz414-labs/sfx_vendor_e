@@ -393,6 +393,38 @@ fi
 $VENDOR_DIR/init.sh
 
 
+# set global version vars
+##################################
+
+vendor=lineage
+case "$BRANCH_NAME" in
+  *nougat*)
+    vendor="cm"
+    themuppets_branch="cm-14.1"
+    android_version="7.1.2"
+    ;;
+  *oreo*)
+    themuppets_branch="lineage-15.1"
+    android_version="8.1"
+    ;;
+  *pie*)
+    themuppets_branch="lineage-16.0"
+    android_version="9"
+    ;;
+  *q*)
+    themuppets_branch="lineage-17.1"
+    android_version="10"
+    ;;
+  *)
+    echo ">> [$(date)] Building branch $branch is not (yet/anymore) suppported"
+    exit 1
+    ;;
+esac
+
+android_version_major=$(cut -d '.' -f 1 <<< $android_version)
+
+export android_version_major android_version themuppets_branch vendor
+
 # sync/reset when requested
 ##################################
 

@@ -1,28 +1,13 @@
 #!/bin/bash
-##################################################################################################
+##############################################################################################################
+#
+# Copyright (C) 2020 eCorp Romain HUNAULT <romain.hunaul@e.email>, steadfasterX <steadfasterX@binbash.rocks>
+#
+##############################################################################################################
 
 echo -e '\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
 echo      '********                  /e/ - POSTSYNC                    ********'
 echo -e   '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'
-
-    android_version=$(sed -n -e 's/^\s*PLATFORM_VERSION\.OPM1 := //p' build/core/version_defaults.mk)
-    if [ -z $android_version ]; then
-      android_version=$(sed -n -e 's/^\s*PLATFORM_VERSION\.PPR1 := //p' build/core/version_defaults.mk)
-      if [ -z $android_version ]; then
-        android_version=$(sed -n -e 's/^\s*PLATFORM_VERSION := //p' build/core/version_defaults.mk)
-        if [ -z $android_version ]; then
-          echo ">> [$(date)] Can't detect the android version"
-          exit 1
-        fi
-      fi
-    fi
-    android_version_major=$(cut -d '.' -f 1 <<< $android_version)
-
-    if [ "$android_version_major" -ge "8" ]; then
-      vendor="lineage"
-    else
-      vendor="cm"
-    fi
 
     if [ ! -d "vendor/$vendor" ]; then
       echo ">> [$(date)] Missing \"vendor/$vendor\", aborting"
@@ -67,7 +52,6 @@ echo -e   '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\
       grep -q "PRODUCT_EXTRA_RECOVERY_KEYS := user-keys/releasekey" vendor/$vendor/config/common.mk
       [ $? -ne 0 ] && sed -i "1s;^;PRODUCT_EXTRA_RECOVERY_KEYS := user-keys/releasekey\n;" vendor/$vendor/config/common.mk
     fi
-
 
     if [ -f ${ROOT_DIR}/userscripts/before.sh ]; then
       echo ">> [$(date)] Running before.sh"

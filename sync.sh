@@ -2,7 +2,7 @@
 
 # Copyright (c) 2017 Julian Xhokaxhiu
 # Copyright (C) 2017-2018 Nicola Corna <nicola@corna.info>
-# Copyright (C) 2020 eCorp Romain HUNAULT <romain.hunaul@e.email>
+# Copyright (C) 2020 eCorp Romain HUNAULT <romain.hunaul@e.email>, steadfasterX <steadfasterX@binbash.rocks>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -89,20 +89,8 @@ fi
 
     rm -f .repo/local_manifests/proprietary.xml
     if [ "$INCLUDE_PROPRIETARY" = true ]; then
-      if [[ $BRANCH_NAME =~ nougat$ ]]; then
-        themuppets_branch=cm-14.1
-        echo ">> [$(date)] Use branch $themuppets_branch on github.com/TheMuppets"
-      elif [[ $BRANCH_NAME =~ oreo$ ]]; then
-        themuppets_branch=lineage-15.1
-        echo ">> [$(date)] Use branch $themuppets_branch on github.com/TheMuppets"
-      elif [[ $BRANCH_NAME =~ pie$ ]]; then
-        themuppets_branch=lineage-16.0
-        echo ">> [$(date)] Use branch $themuppets_branch on github.com/TheMuppets"
-      else
-        themuppets_branch=cm-14.1
-        echo ">> [$(date)] Can't find a matching branch on github.com/TheMuppets, using $themuppets_branch"
-      fi
       wget -q -O .repo/local_manifests/proprietary.xml "https://raw.githubusercontent.com/TheMuppets/manifests/$themuppets_branch/muppets.xml"
+      ${ROOT_DIR}/build_manifest.py --remote "https://gitlab.com" --remotename "gitlab_https" "https://gitlab.com/the-muppets/manifest/raw/$themuppets_branch/muppets.xml" .repo/local_manifests/proprietary_gitlab.xml
     fi
 
     echo ">> [$(date)] Syncing branch repository" | tee -a "$repo_log"

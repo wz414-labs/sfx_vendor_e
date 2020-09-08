@@ -43,6 +43,15 @@ codename=$EOS_DEVICE
             sha256sum "$build" > "$ZIP_DIR/$zipsubdir/$build.sha256sum"
           done
           find . -maxdepth 1 -name 'e-*.zip*' -type f -exec mv {} "$ZIP_DIR/$zipsubdir/" \; &>> "$DEBUG_LOG"
+
+if [ "$RECOVERY_IMG" = true ]; then
+    if [ -f "recovery.img" ]; then
+        cp -a recovery.img "$ZIP_DIR/$zipsubdir/recovery-${build%.*}.img"
+    else
+        cp -a boot.img "$ZIP_DIR/$zipsubdir/recovery-${build%.*}.img"
+    fi
+fi
+
           cd "$source_dir"
           build_successful=true
 

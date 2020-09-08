@@ -283,6 +283,13 @@ EOS_BUILD_DATE=$(date +%Y%m%d)
 SYNC_RESET="$EOS_SYNC_RESET"
 : "${SYNC_RESET:=0}"
 
+# Save recovery image
+# define EOS_SAVE_RECOVERY in your device/<vendor>/<codename>/vendorsetup.sh.
+RECOVERY_IMG="$EOS_SAVE_RECOVERY"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${RECOVERY_IMG=:=false}"
+
+
 #############################################################################################
 # END OF USER VARS
 #############################################################################################

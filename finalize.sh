@@ -15,27 +15,6 @@ codename=$EOS_DEVICE
             find out/target/product/$codename -maxdepth 1 -name "e-*-$currentdate-*.zip*" -type f -exec sh ${VENDOR_DIR}/src/fix_build_date.sh {} $currentdate $EOS_BUILD_DATE \; &>> "$DEBUG_LOG"
           fi
 
-          if [ "$BUILD_DELTA" = true ]; then
-            if [ -d "delta_last/$codename/" ]; then
-              # If not the first build, create delta files
-              echo ">> [$(date)] Generating delta files for $codename" | tee -a "$DEBUG_LOG"
-              cd ${ROOT_DIR}/delta
-              if ./opendelta.sh $codename &>> "$DEBUG_LOG"; then
-                echo ">> [$(date)] Delta generation for $codename completed" | tee -a "$DEBUG_LOG"
-              else
-                echo ">> [$(date)] Delta generation for $codename failed" | tee -a "$DEBUG_LOG"
-              fi
-              if [ "$DELETE_OLD_DELTAS" -gt "0" ]; then
-                $PYTHONBIN ${VENDOR_DIR}/src/clean_up.py -n $DELETE_OLD_DELTAS -V $los_ver -N 1 "$DELTA_DIR/$codename" &>> $DEBUG_LOG
-              fi
-              cd "$source_dir"
-            else
-              # If the first build, copy the current full zip in $source_dir/delta_last/$codename/
-              echo ">> [$(date)] No previous build for $codename; using current build as base for the next delta" | tee -a "$DEBUG_LOG"
-              mkdir -p $SRC_DIR/delta_last/$codename/ &>> "$DEBUG_LOG"
-              find out/target/product/$codename -maxdepth 1 -name 'e-*.zip' -type f -exec cp {} "$SRC_DIR/delta_last/$codename/" \; &>> "$DEBUG_LOG"
-            fi
-          fi
           # Move produced ZIP files to the main OUT directory
           echo ">> [$(date)] Moving build artifacts for $codename to '$ZIP_DIR/$zipsubdir'" | tee -a "$DEBUG_LOG"
           cd out/target/product/$codename
@@ -106,15 +85,6 @@ fi
 
         echo "Switch back to Python3"
         PYTHONBIN=/usr/bin/python3
-
-# Create the OpenDelta's builds JSON file
-if ! [ -z "$OPENDELTA_BUILDS_JSON" ]; then
-  echo ">> [$(date)] Creating OpenDelta's builds JSON file (ZIP_DIR/$OPENDELTA_BUILDS_JSON)"
-  if [ "$ZIP_SUBDIR" != true ]; then
-    echo ">> [$(date)] WARNING: OpenDelta requires zip builds separated per device! You should set ZIP_SUBDIR to true"
-  fi
-  $PYTHONBIN ${VENDOR_DIR}/src/opendelta_builds_json.py "$ZIP_DIR" -o "$ZIP_DIR/$OPENDELTA_BUILDS_JSON"
-fi
 
 if [ "$DELETE_OLD_LOGS" -gt "0" ]; then
   find "$LOGS_DIR" -maxdepth 1 -name repo-*.log | sort | head -n -$DELETE_OLD_LOGS | xargs -r rm

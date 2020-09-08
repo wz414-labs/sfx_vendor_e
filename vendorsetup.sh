@@ -19,7 +19,6 @@ ZIP_DIR="$EOS_ZIP_DIR"
 : "${ZIP_DIR:=${SRC_DIR}/zips}"
 
 export LMANIFEST_DIR=./.repo/local_manifests
-export DELTA_DIR=${SRC_DIR}/delta
 export LOGS_DIR=${SRC_DIR}/logs
 export USERSCRIPTS_DIR=${SRC_DIR}/userscripts
 export DEBIAN_FRONTEND=noninteractive
@@ -30,10 +29,10 @@ export BUILDSCRIPTSREPO="https://gitlab.e.foundation/steadfasterX/android_vendor
 # EXPORTS_VALS) egrep '^\w+="\$' vendor/e/vendorsetup.sh |cut -d = -f2 | tr -d '"' |tr -d '$' |tr "\n" ' '
 
 # internal variables which are used in all internal scripts
-EXPORTS_KEYS="USE_CCACHE CCACHE_DIR CCACHE_SIZE BRANCH_NAME RELEASE_TYPE REPO MIRROR OTA_URL USER_NAME USER_MAIL INCLUDE_PROPRIETARY BUILD_OVERLAY LOCAL_MIRROR CRONTAB_TIME CLEAN_AFTER_BUILD CLEAN_BEFORE_BUILD WITH_SU ANDROID_JACK_VM_ARGS CUSTOM_PACKAGES SIGN_BUILDS KEYS_SUBJECT KEYS_SUBJECT ZIP_SUBDIR LOGS_SUBDIR SIGNATURE_SPOOFING BUILD_DELTA DELETE_OLD_ZIPS DELETE_OLD_DELTAS DELETE_OLD_LOGS OPENDELTA_BUILDS_JSON EOS_BUILD_DATE TMP_DIR ZIP_DIR SYNC_RESET KEYS_DIR"
+EXPORTS_KEYS="USE_CCACHE CCACHE_DIR CCACHE_SIZE BRANCH_NAME RELEASE_TYPE REPO MIRROR OTA_URL USER_NAME USER_MAIL INCLUDE_PROPRIETARY BUILD_OVERLAY LOCAL_MIRROR CRONTAB_TIME CLEAN_AFTER_BUILD CLEAN_BEFORE_BUILD WITH_SU ANDROID_JACK_VM_ARGS CUSTOM_PACKAGES SIGN_BUILDS KEYS_SUBJECT KEYS_SUBJECT ZIP_SUBDIR LOGS_SUBDIR SIGNATURE_SPOOFING DELETE_OLD_ZIPS DELETE_DELETE_OLD_LOGS EOS_BUILD_DATE TMP_DIR ZIP_DIR SYNC_RESET KEYS_DIR"
 
 # user configurable variables usually set in vendorsetup.sh or exported in the current environment
-EXPORTS_VALS="EOS_TMP_DIR EOS_ZIP_DIR EOS_USE_CCACHE EOS_CCACHE_DIR EOS_CCACHE_SIZE EOS_BRANCH_NAME EOS_RELEASE_TYPE EOS_REPO EOS_MIRROR EOS_OTA_URL EOS_INCLUDE_PROPRIETARY EOS_BUILD_OVERLAY EOS_LOCAL_MIRROR EOS_CLEAN_ZIPDIR EOS_CRONTAB_TIME EOS_CLEAN_AFTER_BUILD EOS_CLEAN_BEFORE_BUILD EOS_WITH_SU EOS_ANDROID_JACK_VM_ARGS EOS_CUSTOM_PACKAGES EOS_SIGN_BUILDS EOS_KEYS_SUBJECT EOS_ZIP_SUBDIR EOS_LOGS_SUBDIR EOS_SIGNATURE_SPOOFING EOS_BUILD_DELTA EOS_DELETE_OLD_ZIPS EOS_DELETE_OLD_DELTAS EOS_DELETE_OLD_LOGS OPENDELTA_BUILDS_JSON EOS_SYNC_RESET"
+EXPORTS_VALS="EOS_TMP_DIR EOS_ZIP_DIR EOS_USE_CCACHE EOS_CCACHE_DIR EOS_CCACHE_SIZE EOS_BRANCH_NAME EOS_RELEASE_TYPE EOS_REPO EOS_MIRROR EOS_OTA_URL EOS_INCLUDE_PROPRIETARY EOS_BUILD_OVERLAY EOS_LOCAL_MIRROR EOS_CLEAN_ZIPDIR EOS_CRONTAB_TIME EOS_CLEAN_AFTER_BUILD EOS_CLEAN_BEFORE_BUILD EOS_WITH_SU EOS_ANDROID_JACK_VM_ARGS EOS_CUSTOM_PACKAGES EOS_SIGN_BUILDS EOS_KEYS_SUBJECT EOS_ZIP_SUBDIR EOS_LOGS_SUBDIR EOS_SIGNATURE_SPOOFING EOS_DELETE_OLD_ZIPS EOS_DELETE_OLD_LOGS EOS_SYNC_RESET"
 
 # merge all exports
 EXPORTS="$EXPORTS_KEYS $EXPORTS_VALS"
@@ -241,38 +240,17 @@ SIGNATURE_SPOOFING="$EOS_SIGNATURE_SPOOFING"
 # if not defined in the device vendorsetup.sh the following will be used instead:
 : "${SIGNATURE_SPOOFING:=restricted}"
 
-# Generate delta files
-# define EOS_BUILD_DELTA in your device/<vendor>/<codename>/vendorsetup.sh.
-BUILD_DELTA="$EOS_BUILD_DELTA"
-# if not defined in the device vendorsetup.sh the following will be used instead:
-: "${BUILD_DELTA:=false}"
-
 # Delete old zips in $ZIP_DIR, keep only the N latest one (0 to disable)
 # define EOS_DELETE_OLD_ZIPS in your device/<vendor>/<codename>/vendorsetup.sh.
 DELETE_OLD_ZIPS="$EOS_DELETE_OLD_ZIPS"
 # if not defined in the device vendorsetup.sh the following will be used instead:
 : "${DELETE_OLD_ZIPS:=0}"
 
-# Delete old deltas in $DELTA_DIR, keep only the N latest one (0 to disable)
-# define EOS_DELETE_OLD_DELTAS in your device/<vendor>/<codename>/vendorsetup.sh.
-DELETE_OLD_DELTAS="$EOS_DELETE_OLD_DELTAS"
-# if not defined in the device vendorsetup.sh the following will be used instead:
-: "${DELETE_OLD_DELTAS:=0}"
-
 # Delete old logs in $LOGS_DIR, keep only the N latest one (0 to disable)
 # define EOS_DELETE_OLD_LOGS in your device/<vendor>/<codename>/vendorsetup.sh.
 DELETE_OLD_LOGS="$EOS_DELETE_OLD_LOGS"
 # if not defined in the device vendorsetup.sh the following will be used instead:
 : "${DELETE_OLD_LOGS:=0}"
-
-# Create a JSON file that indexes the build zips at the end of the build process
-# (for the updates in OpenDelta). The file will be created in $ZIP_DIR with the
-# specified name; leave empty to skip it.
-# Requires ZIP_SUBDIR.
-# define EOS_OPENDELTA_BUILDS_JSON in your device/<vendor>/<codename>/vendorsetup.sh.
-OPENDELTA_BUILDS_JSON="$OPENDELTA_BUILDS_JSON"
-# if not defined in the device vendorsetup.sh the following will be used instead:
-: "${OPENDELTA_BUILDS_JSON:=undefined}"
 
 # set the build date
 EOS_BUILD_DATE=$(date +%Y%m%d)
@@ -307,7 +285,6 @@ mkdir -p $TMP_DIR
 mkdir -p $TMP
 [ "$USE_CCACHE" == "1" ] && mkdir -p $CCACHE_DIR
 mkdir -p $LMANIFEST_DIR
-mkdir -p $DELTA_DIR
 [ ${SIGN_BUILDS} == "true" ] && mkdir -p $KEYS_DIR
 mkdir -p $USERSCRIPTS_DIR
 
@@ -325,27 +302,6 @@ mkdir -p $LOGS_DIR
 ############################
 [ ! -z "$ROOT_DIR" ] && [ -d "$ROOT_DIR" ] && [ "$ROOT_DIR" != "/" ] && rm -rf ${ROOT_DIR}/*
 cp -rf ${VENDOR_DIR}/src/* ${ROOT_DIR}/
-
-# Download and build delta tools
-################################
-if [ "$BUILD_DELTA" == "true" ];then
-    cd $ROOT_DIR && \
-        mkdir delta && \
-        echo "cloning"
-        git clone --depth=1 https://gitlab.e.foundation/e/os/android_packages_apps_OpenDelta.git OpenDelta && \
-        gcc -o delta/zipadjust OpenDelta/jni/zipadjust.c OpenDelta/jni/zipadjust_run.c -lz && \
-        cp OpenDelta/server/minsignapk.jar OpenDelta/server/opendelta.sh delta/ && \
-        chmod +x delta/opendelta.sh && \
-        rm -rf OpenDelta/ && \
-        sed -i -e "s|^\s*HOME=.*|HOME=$ROOT_DIR|; \
-                   s|^\s*BIN_XDELTA=.*|BIN_XDELTA=xdelta3|; \
-                   s|^\s*FILE_MATCH=.*|FILE_MATCH=lineage-\*.zip|; \
-                   s|^\s*PATH_CURRENT=.*|PATH_CURRENT=$ANDROIDTOP/out/target/product/$DEVICE|; \
-                   s|^\s*PATH_LAST=.*|PATH_LAST=$SRC_DIR/delta_last/$DEVICE|; \
-                   s|^\s*KEY_X509=.*|KEY_X509=$KEYS_DIR/releasekey.x509.pem|; \
-                   s|^\s*KEY_PK8=.*|KEY_PK8=$KEYS_DIR/releasekey.pk8|; \
-                   s|publish|$DELTA_DIR|g" $ROOT_DIR/delta/opendelta.sh
-fi
 
 # export all environment variables
 ##################################

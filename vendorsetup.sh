@@ -366,8 +366,8 @@ echo -e   '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\
 echo ">> [$(date)] Determining correct OpenJDK version for $BRANCH_NAME"
 
 case $BRANCH_NAME in
-    *-pie)	JAVABASE="$ANDROIDTOP/prebuilts/jdk/jdk9/linux-x86" ;;	# prebuilt
-    *-oreo) 	NEEDEDJAVA=java-8-openjdk-amd64 ; JAVABASE=/usr/lib/jvm/$NEEDEDJAVA ;;
+    *-pie)	JAVABASE="$ANDROIDTOP/prebuilts/jdk/jdk9/linux-x86" ; NEEDEDJAVA=shipped ;;
+    *-oreo) 	NEEDEDJAVA=java-1.8.0-openjdk-amd64 ; JAVABASE=/usr/lib/jvm/$NEEDEDJAVA ;;
     *-nougat)	NEEDEDJAVA=java-7-oracle; JAVABASE=/usr/lib/jvm/$NEEDEDJAVA;;
     *)
 	echo "WARNING: cannot determine best java version for $BRANCH_NAME!"
@@ -376,26 +376,31 @@ esac
 JAVACBIN=$JAVABASE/bin/javac
 
 echo "... checking if we need to switch Java version"
-CURRENTJ=$(java -version 2>&1|grep version)
-NEWJBIN=$($JAVABASE/bin/java -version 2>&1|grep version)
-if [ "x$CURRENTJ" == "x$NEWJBIN" ];then
-	echo "... skipping java switch because we already have the wanted version ($CURRENTJ == $NEWJBIN)"
+if [ "$NEEDEDJAVA" == "shipped" ];then
+    echo "... skipping touching java as we use a shipped one ($JAVABASE)"
 else
+    CURRENTJ=$(java -version 2>&1|grep version)
+    NEWJBIN=$($JAVABASE/bin/java -version 2>&1|grep version)
+    if [ "x$CURRENTJ" == "x$NEWJBIN" ];then
+	echo "... skipping java switch because we already have the wanted version ($CURRENTJ == $NEWJBIN)"
+    else
 	echo "($CURRENTJ vs. $NEWJBIN)"
 	echo "... switching to $NEEDEDJAVA..."
-	sudo update-java-alternatives -v -s $NEEDEDJAVA
-fi
+	sudo update-java-alternatives -v -s $NEEDEDJAVA --jre-headless
+	echo -e "IF THE ABOVE FAILS, CHECK YOUR 'PATH' VARIABLE. PATH is currently set to:\n$PATH"
+    fi
 
-CURRENTC=$(javac -version 2>&1)
-NEWJCBIN=$($JAVACBIN -version 2>&1)
-if [ "x$CURRENTC" == "x$NEWJCBIN" ];then
+    CURRENTC=$(javac -version 2>&1)
+    NEWJCBIN=$($JAVACBIN -version 2>&1)
+    if [ "x$CURRENTC" == "x$NEWJCBIN" ];then
 	echo "... skipping javaC switch because we already have the wanted version ($CURRENTC == $NEWJCBIN)"
-else
+    else
 	echo "($CURRENTC vs. $NEWJCBIN)"
 	echo "... switching to $JAVACBIN..."
 	sudo update-alternatives --set javac $JAVACBIN
+    fi
 fi
-echo ">> [$(date)] Using OpenJDK $NEEDEDJAVA"
+echo ">> [$(date)] Using Java JDK $JAVABASE"
 
 
 # clean when requested

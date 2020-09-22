@@ -99,7 +99,7 @@ CCACHE_SIZE="$EOS_CCACHE_SIZE"
 # define EOS_BRANCH_NAME in your device/<vendor>/<codename>/vendorsetup.sh.
 BRANCH_NAME="$EOS_BRANCH_NAME"
 # if not defined in the device vendorsetup.sh the following will be used instead:
-: "${BRANCH_NAME:=v1-pie}"
+: "${BRANCH_NAME:=v1-q}"
 
 # Environment for the device name
 # if not set as an environment variable the following will be used instead:

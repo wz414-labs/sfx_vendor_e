@@ -36,7 +36,7 @@ echo -e   '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\
 
     if [ "$SIGN_BUILDS" = true ]; then
       echo ">> [$(date)] Adding keys path ($KEYS_DIR)"
-      if [ ! -L user-keys ];then
+      if [ ! -L user-keys ]&&[ -d "user-keys" ];then
 	echo "WARNING: KEYS_DIR main path 'user-keys' is a directory - we expected a LINK instead!"
       else
 	# WARNING: we have to ensure that a link has been removed before.

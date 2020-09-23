@@ -69,9 +69,9 @@ Then create/edit your local manifest in `.repo/local_manifests/eos.xml`:
 ```
 Finally sync the sources:
 ```
-repo -j<processes> sync
+repo sync -j<processes>
 e.g.
-repo -j8 sync
+repo sync -j8
 ```
 
 
@@ -227,7 +227,7 @@ This repo provides a new build target:
 so a complete run would be:
 
 ~~~
-repo -j8 sync
+repo sync -j8
 source build/envsetup.sh
 breakfast <your-device> (or lunch <your-device_releasetype>)
 mka eos

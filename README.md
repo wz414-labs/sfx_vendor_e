@@ -108,10 +108,15 @@ you need at least to set 1 variable here:
  - `export EOS_RELEASE_TYPE=UNOFFICIAL`: the [type of your release][release-types], e.g. "UNOFFICIAL"
  - `export EOS_CUSTOM_PACKAGES="....."`: override the list of /e/ apps to be included
 
-for a complete list and their default setting look in vendor/e/[vendorsetup.sh][vendorsetup].
+Show which EOS variable sets which internal/Android variable by executing this command:
 
-note: do not change variables there! just find out what the proper variable name is
-and set in your `device/<vendor>/<codename>/vendorsetup.sh`!
+`egrep '^\w+=' vendor/e/vendorsetup.sh |cut -d = -f1-10 | grep -v EXPORTS_`
+
+For their default values look into vendor/e/[vendorsetup.sh][vendorsetup].
+Don't do any changes in that file though, just adjust the correct EOS_xxx variable if you don't want to use the default.
+
+Note: Do *not* change variables in vendor/e/vendorsetup.sh! Just find out what the proper variable name is
+and set that EOS_xxx variable within your `device/<vendor>/<codename>/vendorsetup.sh`!
 
 
 ### lineage.mk

@@ -100,13 +100,14 @@ you need at least to set 1 variable here:
  
  there are more variables you *can* set here (optional), some maybe interesting examples are:
 
- - `export EOS_USE_CCACHE=1|0 (1 = enable, 0 = disable)`
- - `export EOS_CCACHE_DIR=<directory>`
- - `export EOS_CCACHE_SIZE=<size>G`
- - `export EOS_SIGNATURE_SPOOFING=no|yes|restricted`: add or add not microG, or add it restricted (see topic "Signature spoofing")
- - `export EOS_BRANCH_NAME=v1-pie` the [release branch][release-branches] you want to build on, e.g. "v1-pie"
- - `export EOS_RELEASE_TYPE=UNOFFICIAL`: the [type of your release][release-types], e.g. "UNOFFICIAL"
+ - `export EOS_USE_CCACHE=1|0 (1 = enable, 0 = disable): use ccache or not (default: 1)`
  - `export EOS_CCACHE_EXEC=<path-to-binary> (default: /usr/bin/ccache)`
+ - `export EOS_CCACHE_COMPRESS=1|0 (1 = enable, 0 = disable): enable/disable ccache compression (default: 0)`
+ - `export EOS_CCACHE_DIR=<directory> (default: /ccache/e-os)`
+ - `export EOS_CCACHE_SIZE=<size>G (default: 12 GB)`
+ - `export EOS_SIGNATURE_SPOOFING=no|yes|restricted`: add or add not microG, or add it restricted (default: restricted, see topic "Signature spoofing")
+ - `export EOS_BRANCH_NAME=v1-pie` the [release branch][release-branches] you want to build on, e.g. "v1-pie" (default: the branch of this repo)
+ - `export EOS_RELEASE_TYPE=UNOFFICIAL`: the [type of your release][release-types], e.g. "UNOFFICIAL" (default: UNOFFICIAL)
  - `export EOS_CUSTOM_PACKAGES="....."`: override the list of /e/ apps to be included
 
 Show which EOS variable sets which internal/Android variable by executing this command:

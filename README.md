@@ -100,7 +100,7 @@ you need at least to set 1 variable here:
  
  there are more variables you *can* set here (optional), some maybe interesting examples are:
 
- - `export EOS_USE_CCACHE=true|false`
+ - `export EOS_USE_CCACHE=1|0 (1 = enable, 0 = disable)`
  - `export EOS_CCACHE_DIR=<directory>`
  - `export EOS_CCACHE_SIZE=<size>G`
  - `export EOS_SIGNATURE_SPOOFING=no|yes|restricted`: add or add not microG, or add it restricted (see topic "Signature spoofing")

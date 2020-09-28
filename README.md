@@ -106,6 +106,7 @@ you need at least to set 1 variable here:
  - `export EOS_SIGNATURE_SPOOFING=no|yes|restricted`: add or add not microG, or add it restricted (see topic "Signature spoofing")
  - `export EOS_BRANCH_NAME=v1-pie` the [release branch][release-branches] you want to build on, e.g. "v1-pie"
  - `export EOS_RELEASE_TYPE=UNOFFICIAL`: the [type of your release][release-types], e.g. "UNOFFICIAL"
+ - `export EOS_CCACHE_EXEC=<path-to-binary> (default: /usr/bin/ccache)`
  - `export EOS_CUSTOM_PACKAGES="....."`: override the list of /e/ apps to be included
 
 Show which EOS variable sets which internal/Android variable by executing this command:

@@ -82,8 +82,8 @@ USE_CCACHE="$EOS_USE_CCACHE"
 
 # ensure the correct value for USE_CCACHE is used as we depend on that later on
 case $USE_CCACHE in
-    true|TRUE) USE_CCACHE=1 ;;
-    false|FALSE) USE_CCACHE=0 ;;
+    true|TRUE|1) USE_CCACHE=1 ;;
+    false|FALSE|0) USE_CCACHE=0 ;;
     *) echo -e "\nERROR: USE_CCACHE must be either 1 (or 'true') or 0 (or 'false') but is currently set to: $USE_CCACHE !!\n" && return 3 ;;
 esac
 

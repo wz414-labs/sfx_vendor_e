@@ -508,6 +508,11 @@ $VENDOR_DIR/post-sync.sh
 
 export RESET_DONE=false
 
+echo -e "\n============================================"
+echo -e "/e/ build variables:\n===================="
+for var in $EXPORTS_KEYS;do echo $var=${!var};done
+echo -e "============================================\n"
+
 fi # end "!= reset"
 
 

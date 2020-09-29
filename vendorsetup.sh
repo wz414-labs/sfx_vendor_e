@@ -124,7 +124,7 @@ CCACHE_SIZE="$EOS_CCACHE_SIZE"
 # define EOS_CCACHE_COMPRESS in your device/<vendor>/<codename>/vendorsetup.sh.
 CCACHE_COMPRESS="$EOS_CCACHE_COMPRESS"
 # if not defined in the device vendorsetup.sh the following will be used instead:
-: "${CCACHE_COMPRESS:=0}"
+: "${CCACHE_COMPRESS:=false}"
 
 # ccache compression is using by default a level of 6 which can be adjusted here
 # it must be set between 1 (fastest, worst compression) and 9 (slowest, best compression)

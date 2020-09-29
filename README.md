@@ -102,7 +102,7 @@ you need at least to set 1 variable here:
 
  - `export EOS_USE_CCACHE=1|0 (1 = enable, 0 = disable): use ccache or not (default: 1)`
  - `export EOS_CCACHE_EXEC=<path-to-binary> (default: /usr/bin/ccache)`
- - `export EOS_CCACHE_COMPRESS=1|0 (1 = enable, 0 = disable): enable/disable ccache compression (default: 0)`
+ - `export EOS_CCACHE_COMPRESS=true|false (true = enable, false = disable): enable/disable ccache compression (default: false)`
  - `export EOS_CCACHE_DIR=<directory> (default: /ccache/e-os)`
  - `export EOS_CCACHE_SIZE=<size>G (default: 12 GB)`
  - `export EOS_SIGNATURE_SPOOFING=no|yes|restricted`: add or add not microG, or add it restricted (default: restricted, see topic "Signature spoofing")

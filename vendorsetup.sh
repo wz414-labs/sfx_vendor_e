@@ -510,6 +510,7 @@ export RESET_DONE=false
 
 echo -e "\n============================================"
 echo -e "/e/ build variables:\n===================="
+echo "EOS_DEVICE=$EOS_DEVICE"
 for var in $EXPORTS_KEYS;do echo $var=${!var};done
 echo -e "============================================\n"
 

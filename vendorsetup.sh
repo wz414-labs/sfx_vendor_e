@@ -45,10 +45,10 @@ export BUILDSCRIPTSREPO="https://gitlab.e.foundation/steadfasterX/android_vendor
 # EXPORTS_VALS) egrep '^\w+="\$' vendor/e/vendorsetup.sh |cut -d = -f2 | tr -d '"' |tr -d '$' |tr "\n" ' '
 
 # internal variables which are used in all internal scripts
-EXPORTS_KEYS="USE_CCACHE CCACHE_EXEC CCACHE_DIR CCACHE_SIZE CCACHE_COMPRESS CCACHE_COMPRESSLEVEL BRANCH_NAME RELEASE_TYPE REPO MIRROR OTA_URL USER_NAME USER_MAIL INCLUDE_PROPRIETARY BUILD_OVERLAY LOCAL_MIRROR CRONTAB_TIME CLEAN_AFTER_BUILD CLEAN_BEFORE_BUILD WITH_SU ANDROID_JACK_VM_ARGS CUSTOM_PACKAGES SIGN_BUILDS KEYS_SUBJECT KEYS_SUBJECT ZIP_SUBDIR LOGS_SUBDIR SIGNATURE_SPOOFING DELETE_OLD_ZIPS DELETE_OLD_LOGS EOS_BUILD_DATE TMP_DIR ZIP_DIR SYNC_RESET KEYS_DIR MINIMAL_APPS"
+EXPORTS_KEYS="USE_CCACHE CCACHE_EXEC CCACHE_DIR CCACHE_SIZE CCACHE_COMPRESS CCACHE_NOCOMPRESS CCACHE_COMPRESSLEVEL BRANCH_NAME RELEASE_TYPE REPO MIRROR OTA_URL USER_NAME USER_MAIL INCLUDE_PROPRIETARY BUILD_OVERLAY LOCAL_MIRROR CRONTAB_TIME CLEAN_AFTER_BUILD CLEAN_BEFORE_BUILD WITH_SU ANDROID_JACK_VM_ARGS CUSTOM_PACKAGES SIGN_BUILDS KEYS_SUBJECT KEYS_SUBJECT ZIP_SUBDIR LOGS_SUBDIR SIGNATURE_SPOOFING DELETE_OLD_ZIPS DELETE_OLD_LOGS EOS_BUILD_DATE TMP_DIR ZIP_DIR SYNC_RESET KEYS_DIR MINIMAL_APPS"
 
 # user configurable variables usually set in vendorsetup.sh or exported in the current environment
-EXPORTS_VALS="EOS_TMP_DIR EOS_ZIP_DIR EOS_USE_CCACHE EOS_CCACHE_DIR EOS_CCACHE_SIZE EOS_BRANCH_NAME EOS_RELEASE_TYPE EOS_REPO EOS_MIRROR EOS_OTA_URL EOS_INCLUDE_PROPRIETARY EOS_BUILD_OVERLAY EOS_LOCAL_MIRROR EOS_CLEAN_ZIPDIR EOS_CRONTAB_TIME EOS_CLEAN_AFTER_BUILD EOS_CLEAN_BEFORE_BUILD EOS_WITH_SU EOS_ANDROID_JACK_VM_ARGS EOS_CUSTOM_PACKAGES EOS_SIGN_BUILDS EOS_KEYS_SUBJECT EOS_ZIP_SUBDIR EOS_LOGS_SUBDIR EOS_SIGNATURE_SPOOFING EOS_DELETE_OLD_ZIPS EOS_DELETE_OLD_LOGS EOS_SYNC_RESET EOS_MINI_APPS EOS_BUILD_USER CCACHE_COMPRESS EOS_CCACHE_COMPRESSLEVEL EOS_CCACHE_EXEC"
+EXPORTS_VALS="EOS_TMP_DIR EOS_ZIP_DIR EOS_USE_CCACHE EOS_CCACHE_DIR EOS_CCACHE_SIZE EOS_BRANCH_NAME EOS_RELEASE_TYPE EOS_REPO EOS_MIRROR EOS_OTA_URL EOS_INCLUDE_PROPRIETARY EOS_BUILD_OVERLAY EOS_LOCAL_MIRROR EOS_CLEAN_ZIPDIR EOS_CRONTAB_TIME EOS_CLEAN_AFTER_BUILD EOS_CLEAN_BEFORE_BUILD EOS_WITH_SU EOS_ANDROID_JACK_VM_ARGS EOS_CUSTOM_PACKAGES EOS_SIGN_BUILDS EOS_KEYS_SUBJECT EOS_ZIP_SUBDIR EOS_LOGS_SUBDIR EOS_SIGNATURE_SPOOFING EOS_DELETE_OLD_ZIPS EOS_DELETE_OLD_LOGS EOS_SYNC_RESET EOS_MINI_APPS EOS_BUILD_USER EOS_CCACHE_COMPRESS EOS_CCACHE_COMPRESSLEVEL EOS_CCACHE_EXEC"
 
 # merge all exports
 EXPORTS="$EXPORTS_KEYS $EXPORTS_VALS"
@@ -125,6 +125,15 @@ CCACHE_SIZE="$EOS_CCACHE_SIZE"
 CCACHE_COMPRESS="$EOS_CCACHE_COMPRESS"
 # if not defined in the device vendorsetup.sh the following will be used instead:
 : "${CCACHE_COMPRESS:=false}"
+
+# CCACHE_COMPRESS is a bit sensitive regarding boolean and string definition so force string:
+# a set environment variable means "true" regardless of the value (even if set to an empty string)
+# and an unset environment variable means "false".
+case $CCACHE_COMPRESS in
+    true|TRUE|1) CCACHE_COMPRESS="true" ; CCACHE_NOCOMPRESS=undefined ;;
+    false|FALSE|0|disable|no) CCACHE_COMPRESS=undefined; CCACHE_NOCOMPRESS="true" ;;
+    *) echo -e "\nERROR: CCACHE_COMPRESS is wrong configured because it is currently set to: $CCACHE_COMPRESS !!\n" && return 3 ;;
+esac
 
 # ccache compression is using by default a level of 6 which can be adjusted here
 # it must be set between 1 (fastest, worst compression) and 9 (slowest, best compression)
@@ -384,8 +393,17 @@ for ex in $EXPORTS_KEYS;do
     [ -z "${!ex}" ] && echo "ERROR: required variable $ex is not set!" && LERR=1
     [ $LERR -ne 0 ] && break 9
     # empty those vars which are allowed to be empty (keyword: undefined is set)
-    [ "${!ex}" == "undefined" ] && declare $ex='' && test -z "${!ex}" && echo "emptied $ex >${!ex}<"
-    export $ex || echo "ERROR: failed to export $ex"
+    if [ "${!ex}" == "undefined" ];then
+	case "$ex" in
+	    CCACHE_COMPRESS) unset CCACHE_COMPRESS ;;
+	    CCACHE_NOCOMPRESS) unset CCACHE_NOCOMPRESS ;;
+	    *) declare $ex='' && test -z "${!ex}" && echo "emptied $ex >${!ex}<" ;;
+	esac
+    fi
+    case "$ex" in
+	CCACHE_COMPRESS|CCACHE_NOCOMPRESS) echo "not exporting special var $ex as it is an unset variable" ;;
+	*) export $ex || echo "ERROR: failed to export $ex" ;;
+    esac
 done
 for ex in $EXPORTS_VALS;do
     # empty those vars which are allowed to be empty (keyword: undefined is set)

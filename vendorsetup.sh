@@ -80,6 +80,13 @@ USE_CCACHE="$EOS_USE_CCACHE"
 # if not defined in the device vendorsetup.sh the following will be used instead:
 : "${USE_CCACHE:=1}"
 
+# ensure the correct value for USE_CCACHE is used as we depend on that later on
+case $USE_CCACHE in
+    true|TRUE) USE_CCACHE=1 ;;
+    false|FALSE) USE_CCACHE=0 ;;
+    *) echo -e "\nERROR: USE_CCACHE must be either 1 (or 'true') or 0 (or 'false') but is currently set to: $USE_CCACHE !!\n" && return 3 ;;
+esac
+
 # Since Android 10 / Q ccache has been removed from the sources and you need
 # to define the OS version of ccache.
 # the reason google mentioning:

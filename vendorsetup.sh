@@ -421,7 +421,7 @@ echo ">> [$(date)] Determining correct OpenJDK version for $BRANCH_NAME"
 case $BRANCH_NAME in
     *-pie|*-q)	JAVABASE="$ANDROIDTOP/prebuilts/jdk/jdk9/linux-x86" ; NEEDEDJAVA=shipped ;;
     *-oreo) 	NEEDEDJAVA=java-1.8.0-openjdk-amd64 ; JAVABASE=/usr/lib/jvm/$NEEDEDJAVA ;;
-    *-nougat)	NEEDEDJAVA=java-7-oracle; JAVABASE=/usr/lib/jvm/$NEEDEDJAVA;;
+    *-nougat)	NEEDEDJAVA=java-8-openjdk-amd64; JAVABASE=/usr/lib/jvm/$NEEDEDJAVA;;
     *)
 	echo "WARNING: cannot determine best java version for $BRANCH_NAME!"
     ;;

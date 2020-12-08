@@ -19,17 +19,17 @@ echo -e   '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\
     grep -q "PRODUCT_PACKAGE_OVERLAYS := vendor/$vendor/overlay/microg" vendor/$vendor/config/common.mk
     [ $? -ne 0 ] && sed -i "1s;^;PRODUCT_PACKAGE_OVERLAYS := vendor/$vendor/overlay/microg\n;" "vendor/$vendor/config/common.mk"
 
+    # parse ROM version
+    los_ver_major=$(sed -n -e 's/^\s*PRODUCT_VERSION_MAJOR = //p' "vendor/$vendor/config/common.mk")
+    los_ver_minor=$(sed -n -e 's/^\s*PRODUCT_VERSION_MINOR = //p' "vendor/$vendor/config/common.mk")
+    los_ver="$los_ver_major.$los_ver_minor"
+
     # change version on the dynamic branch
     if [[ "$BRANCH_NAME" =~ v1-.* ]];then
         sed -i -E 's/^(\s*PRODUCT_VERSION_MAJOR = )([0-9]+)/\11/g1' "vendor/$vendor/config/common.mk"
         sed -i -E 's/^(\s*PRODUCT_VERSION_MINOR = )(.*)/\10/g1' "vendor/$vendor/config/common.mk"
         sed -i -E 's/^(\s*PRODUCT_VERSION_MAINTENANCE := )([0-9]+)/\1999/g1' "vendor/$vendor/config/common.mk"
     fi
-
-    # parse ROM version
-    los_ver_major=$(sed -n -e 's/^\s*PRODUCT_VERSION_MAJOR = //p' "vendor/$vendor/config/common.mk")
-    los_ver_minor=$(sed -n -e 's/^\s*PRODUCT_VERSION_MINOR = //p' "vendor/$vendor/config/common.mk")
-    los_ver="$los_ver_major.$los_ver_minor"
 
     echo ">> [$(date)] Setting \"$RELEASE_TYPE\" as release type"
     sed -i "/\$(filter .*\$(${vendor^^}_BUILDTYPE)/,+2d" "vendor/$vendor/config/common.mk"

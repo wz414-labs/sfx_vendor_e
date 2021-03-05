@@ -262,6 +262,8 @@ ANDROID_JACK_VM_ARGS="$EOS_ANDROID_JACK_VM_ARGS"
 # Custom packages to be installed
 # define EOS_CUSTOM_PACKAGES in your device/<vendor>/<codename>/vendorsetup.sh.
 CUSTOM_PACKAGES="$EOS_CUSTOM_PACKAGES"
+# if not defined in the device vendorsetup.sh the following will be used instead:
+: "${CUSTOM_PACKAGES:=undefined}"
 
 # Sign the builds with the keys in $KEYS_DIR
 # define EOS_SIGN_BUILDS in your device/<vendor>/<codename>/vendorsetup.sh.

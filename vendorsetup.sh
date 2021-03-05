@@ -262,8 +262,6 @@ ANDROID_JACK_VM_ARGS="$EOS_ANDROID_JACK_VM_ARGS"
 # Custom packages to be installed
 # define EOS_CUSTOM_PACKAGES in your device/<vendor>/<codename>/vendorsetup.sh.
 CUSTOM_PACKAGES="$EOS_CUSTOM_PACKAGES"
-# if not defined in the device vendorsetup.sh the following will be used instead:
-: "${CUSTOM_PACKAGES:=MuPDF GmsCore GsfProxy FakeStore com.google.android.maps.jar Telegram Signal Mail BlissLauncher BlissIconPack MozillaNlpBackend OpenWeatherMapWeatherProvider AccountManager MagicEarth OpenCamera eDrive Weather Notes Tasks NominatimNlpBackend Light DroidGuard OpenKeychain Message Browser BrowserWebView Apps LibreOfficeViewer}"
 
 # Sign the builds with the keys in $KEYS_DIR
 # define EOS_SIGN_BUILDS in your device/<vendor>/<codename>/vendorsetup.sh.

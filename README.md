@@ -50,9 +50,6 @@ Then create/edit your local manifest in `.repo/local_manifests/eos.xml`:
 ```
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
-    <!-- F-Droid (optional - see topic "F-Droid")
-    #####################################################-->
-    <project name="suicide-squirrel/android_vendor_fdroid" path="vendor/fdroid" remote="github" revision="eos" />
 
     <!-- KERNEL
     #####################################################-->
@@ -64,7 +61,16 @@ Then create/edit your local manifest in `.repo/local_manifests/eos.xml`:
 
     <!-- /e/ vendor repo
     #####################################################-->
-    <project path="vendor/e" name="steadfasterX/android_vendor_e" remote="e" revision="main" />
+    <project name="steadfasterX/android_vendor_e" path="vendor/e" remote="e" revision="REPLACE" />
+
+    <!-- /e/ vendor repo mods (OPTIONAL)
+    #####################################################-->
+    <!-- project name="sfX-Android/android_vendor_e-mod" path="vendor/e-mod" remote="github" revision="REPLACE" /> -->
+
+    <!-- F-Droid (OPTIONAL - see topic "F-Droid")
+    #####################################################-->
+    <!-- project name="sfX-Android/android_vendor_fdroid" path="vendor/fdroid" remote="github" revision="main" /> -->
+
 <manifest>
 ```
 Finally sync the sources:
@@ -178,6 +184,10 @@ if you're OK with that just move on, otherwise set `EOS_INCLUDE_PROPRIETARY` to 
 
 Setting up [F-Droid](https://f-droid.org) in your local manifest will allow you to pre-install F-Droid, it's Privileged Extension and also the [AuroraStore][aurora-store].
 
+ - F-Droid: lesser apps but build from source-code which is public available (open source means trust)
+ - F-Droid privileged extension: allows to keep "unknown sources" off (i.e. you can install apps by F-Droid without any changes)
+ - Aurora: Google Play client. Only use your account details here when really needed (e.g. paid apps). Better choose the *anonymous* access especially when playing around with advanced features like spoofing etc. Apps here comin directly from Google Play which also means the majority is proprietary / closed source and so cannot be verified (same apply when using google play directly, of course)
+
 Here are the things to do/know:
 
 `device/<vendor>/<codename>/<device>.mk`:
@@ -185,11 +195,13 @@ Here are the things to do/know:
 - include additional F-Droid repos with: `FDROID_EXTRA_REPOS := true` - see [additional_repos.xml][fdroid-repos]
 - add these to either PRODUCT_PACKAGES in the same mk or add these to `EOS_CUSTOM_PACKAGES` in `device/<vendor>/<codename>/vendorsetup.sh`
 
-Note1: additional repos for F-Droid need to be enabled in F-Droid manually to use them. This ensures that you just have enabled what you need/want.
+Note1: If you build with `FDROID_EXTRA_REPOS` you still need to enable them manually in F-Droid. This ensures that you just have enabled what you need/want.
 
-Note2: enabling the additional repos need either clearing the app data of F-Droid (settings) or a factory reset to make them appear [(background)][fdroid-reset]
+Note2: If you update a build with enabling `FDROID_EXTRA_REPOS` later (so if you update a build which had F-Droid but not the additional repos) you need to either clear the app data of F-Droid (settings) or a factory reset to make them appear [(background)][fdroid-reset]
 
 Example config which includes F-Droid + privilege ext. + additional repos and AuroraStore:
+
+`device/<vendor>/<codename>/<device>.mk`:
 
 ~~~
 WITH_FDROID := true
@@ -201,10 +213,9 @@ PRODUCT_PACKAGES += \
     AuroraStore
 ~~~
 
-In short:
+Setup your GPG keystore for verifying:
 
- - F-Droid: lesser apps but build from source-code which is public available (open source means trust)
- - Aurora: Google Play client. Only use your account details here when really needed (e.g. paid apps). Better choose the *anonymous* access especially when playing around with advanced features like spoofing etc. Apps here comin directly from Google Play which also means the majority is proprietary / closed source and so cannot be verified (same apply when using google play directly, of course)
+- check the F-Droid [README](https://github.com/sfX-android/android_vendor_fdroid/blob/main/README.md)
 
 ### OTA
 
@@ -231,12 +242,30 @@ This repo provides a new build target:
 
     build /e/ ;)
 
-so a complete run would be:
+
+Build examples:
 
 ~~~
+a complete run would be (without F-Droid, Aurora and such):
+
+repo sync -j<cpu-cores>
+source build/envsetup.sh
+lunch lineage_<device-model>-<releasetype>
+mka eos
+
+so building the LG H815 without F-Droid etc and 8 CPU cores:
+
 repo sync -j8
 source build/envsetup.sh
-breakfast <your-device> (or lunch <your-device_releasetype>)
+lunch lineage_h815-userdebug
+mka eos
+
+doing the same but with F-Droid, etc (when also configured in device's mk):
+
+repo sync -j8
+source build/envsetup.sh
+lunch lineage_h815-userdebug
+vendor/fdroid/get_packages.sh vendor/fdroid
 mka eos
 ~~~
 

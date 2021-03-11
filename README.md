@@ -50,6 +50,8 @@ Then create/edit your local manifest in `.repo/local_manifests/eos.xml`:
 ```
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
+    <remote name="fdroid" fetch="https://gitlab.com/fdroid/" />
+    <remote name="sfX" fetch="https://github.com/sfX-Android/" />
 
     <!-- KERNEL
     #####################################################-->
@@ -65,11 +67,12 @@ Then create/edit your local manifest in `.repo/local_manifests/eos.xml`:
 
     <!-- /e/ vendor repo mods (OPTIONAL)
     #####################################################-->
-    <!-- project name="sfX-Android/android_vendor_e-mod" path="vendor/e-mod" remote="github" revision="REPLACE" /> -->
+    <!-- project name="android_vendor_e-mod" path="vendor/e-mod" remote="sfX" revision="REPLACE" /> -->
 
     <!-- F-Droid (OPTIONAL - see topic "F-Droid")
     #####################################################-->
-    <!-- project name="sfX-Android/android_vendor_fdroid" path="vendor/fdroid" remote="github" revision="main" /> -->
+    <!-- project name="android_vendor_fdroid" path="vendor/fdroid" remote="sfX" revision="main" /> -->
+    <!-- project path="packages/apps/F-DroidPrivilegedExtension" name="privileged-extension.git" remote="fdroid" revision="master" /> -->
 
 <manifest>
 ```

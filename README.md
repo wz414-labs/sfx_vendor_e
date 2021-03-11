@@ -8,7 +8,7 @@ which will simply just work. It does not require a Linux setup and has
 extreme low barriers for beginners.
 
 If you ask yourself if you should go the recommended way or the classic
-one the anywer would be almost always: use Docker instead of this here.
+one the answer would be almost always: use Docker instead of this here.
 
 Checkout the [docker guide][docker-guide] for that.
 
@@ -85,9 +85,11 @@ repo sync -j8
 
 ### root-less support
 
-One of the major concerns with the docker guide is that everything runs as root - so with full permissions.
+One of the major concerns with the docker guide is that everything runs as root - so with full permissions. One can say "who cares?" its a container .. but building does not require root and I don't like to give anything more permissions it needs to have - which becomes even more important when using this classic approach of building Android.
 
-Using this approach instead let you use a normal user account when you set the following rule in sudoers. It is not required but will let you auto-change to the correct JAVA version during a build:
+As all stuff from the docker scripts have been adapted for root-less support there is nothing you need to do other then not starting a build as user root. There is one exception: If you build on older then Pie and you want to make use of java auto-detection and -switching.
+
+Using this approach let you use a normal user account when you set the following rule in sudoers. Actually it is not required and more a convenient option. It will allow switching to the correct JAVA version during a build:
 
 `<YOURUSERNAME>      ALL=NOPASSWD: /usr/sbin/update-java-alternatives *`
 
@@ -248,12 +250,12 @@ Build examples:
 ~~~
 a complete run would be (without F-Droid, Aurora and such):
 
-repo sync -j<cpu-cores>
+repo sync -j<processes>
 source build/envsetup.sh
 lunch lineage_<device-model>-<releasetype>
 mka eos
 
-so building the LG H815 without F-Droid etc and 8 CPU cores:
+so building the LG H815 without F-Droid etc and 8 sync processes:
 
 repo sync -j8
 source build/envsetup.sh

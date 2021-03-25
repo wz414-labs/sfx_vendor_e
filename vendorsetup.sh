@@ -25,6 +25,9 @@ export VENDOR_DIR="${ANDROIDTOP}/vendor/e"
 export MIRROR_DIR=${SRC_DIR}/mirror
 export ROOT_DIR=${SRC_DIR}/root
 
+# avoid stupid compiler errors
+export LC_ALL=C
+
 # general tmp path
 TMP_DIR="$EOS_TMP_DIR"
 : "${TMP_DIR:=${SRC_DIR}/tmp}"

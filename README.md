@@ -8,7 +8,7 @@ which will simply just work. It does not require a Linux setup and has
 extreme low barriers for beginners.
 
 If you ask yourself if you should go the recommended way or the classic
-one the anywer would be almost always: use Docker instead of this here.
+one the answer would be almost always: use Docker instead of this here.
 
 Checkout the [docker guide][docker-guide] for that.
 
@@ -50,9 +50,8 @@ Then create/edit your local manifest in `.repo/local_manifests/eos.xml`:
 ```
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
-    <!-- F-Droid (optional - see topic "F-Droid")
-    #####################################################-->
-    <project name="suicide-squirrel/android_vendor_fdroid" path="vendor/fdroid" remote="github" revision="eos" />
+    <remote name="fdroid" fetch="https://gitlab.com/fdroid/" />
+    <remote name="sfX" fetch="https://github.com/sfX-Android/" />
 
     <!-- KERNEL
     #####################################################-->
@@ -64,7 +63,17 @@ Then create/edit your local manifest in `.repo/local_manifests/eos.xml`:
 
     <!-- /e/ vendor repo
     #####################################################-->
-    <project path="vendor/e" name="steadfasterX/android_vendor_e" remote="e" revision="main" />
+    <project name="steadfasterX/android_vendor_e" path="vendor/e" remote="e" revision="REPLACE" />
+
+    <!-- /e/ vendor repo mods (OPTIONAL)
+    #####################################################-->
+    <!-- project name="android_vendor_e-mod" path="vendor/e-mod" remote="sfX" revision="REPLACE" /> -->
+
+    <!-- F-Droid (OPTIONAL - see topic "F-Droid")
+    #####################################################-->
+    <!-- project name="android_vendor_fdroid" path="vendor/fdroid" remote="sfX" revision="main" /> -->
+    <!-- project path="packages/apps/F-DroidPrivilegedExtension" name="privileged-extension.git" remote="fdroid" revision="master" /> -->
+
 <manifest>
 ```
 Finally sync the sources:
@@ -79,9 +88,11 @@ repo sync -j8
 
 ### root-less support
 
-One of the major concerns with the docker guide is that everything runs as root - so with full permissions.
+One of the major concerns with the docker guide is that everything runs as root - so with full permissions. One can say "who cares?" its a container .. but building does not require root and I don't like to give anything more permissions it needs to have - which becomes even more important when using this classic approach of building Android.
 
-Using this approach instead let you use a normal user account when you set the following rule in sudoers. It is not required but will let you auto-change to the correct JAVA version during a build:
+As all stuff from the docker scripts have been adapted for root-less support there is nothing you need to do other then not starting a build as user root. There is one exception: If you build on older then Pie and you want to make use of java auto-detection and -switching.
+
+Using this approach let you use a normal user account when you set the following rule in sudoers. Actually it is not required and more a convenient option. It will allow switching to the correct JAVA version during a build:
 
 `<YOURUSERNAME>      ALL=NOPASSWD: /usr/sbin/update-java-alternatives *`
 
@@ -178,6 +189,10 @@ if you're OK with that just move on, otherwise set `EOS_INCLUDE_PROPRIETARY` to 
 
 Setting up [F-Droid](https://f-droid.org) in your local manifest will allow you to pre-install F-Droid, it's Privileged Extension and also the [AuroraStore][aurora-store].
 
+ - F-Droid: lesser apps but build from source-code which is public available (open source means trust)
+ - F-Droid privileged extension: allows to keep "unknown sources" off (i.e. you can install apps by F-Droid without any changes)
+ - Aurora: Google Play client. Only use your account details here when really needed (e.g. paid apps). Better choose the *anonymous* access especially when playing around with advanced features like spoofing etc. Apps here comin directly from Google Play which also means the majority is proprietary / closed source and so cannot be verified (same apply when using google play directly, of course)
+
 Here are the things to do/know:
 
 `device/<vendor>/<codename>/<device>.mk`:
@@ -185,11 +200,13 @@ Here are the things to do/know:
 - include additional F-Droid repos with: `FDROID_EXTRA_REPOS := true` - see [additional_repos.xml][fdroid-repos]
 - add these to either PRODUCT_PACKAGES in the same mk or add these to `EOS_CUSTOM_PACKAGES` in `device/<vendor>/<codename>/vendorsetup.sh`
 
-Note1: additional repos for F-Droid need to be enabled in F-Droid manually to use them. This ensures that you just have enabled what you need/want.
+Note1: If you build with `FDROID_EXTRA_REPOS` you still need to enable them manually in F-Droid. This ensures that you just have enabled what you need/want.
 
-Note2: enabling the additional repos need either clearing the app data of F-Droid (settings) or a factory reset to make them appear [(background)][fdroid-reset]
+Note2: If you update a build with enabling `FDROID_EXTRA_REPOS` later (so if you update a build which had F-Droid but not the additional repos) you need to either clear the app data of F-Droid (settings) or a factory reset to make them appear [(background)][fdroid-reset]
 
 Example config which includes F-Droid + privilege ext. + additional repos and AuroraStore:
+
+`device/<vendor>/<codename>/<device>.mk`:
 
 ~~~
 WITH_FDROID := true
@@ -201,10 +218,9 @@ PRODUCT_PACKAGES += \
     AuroraStore
 ~~~
 
-In short:
+Setup your GPG keystore for verifying:
 
- - F-Droid: lesser apps but build from source-code which is public available (open source means trust)
- - Aurora: Google Play client. Only use your account details here when really needed (e.g. paid apps). Better choose the *anonymous* access especially when playing around with advanced features like spoofing etc. Apps here comin directly from Google Play which also means the majority is proprietary / closed source and so cannot be verified (same apply when using google play directly, of course)
+- check the F-Droid [README](https://github.com/sfX-android/android_vendor_fdroid/blob/main/README.md)
 
 ### OTA
 
@@ -231,12 +247,30 @@ This repo provides a new build target:
 
     build /e/ ;)
 
-so a complete run would be:
+
+Build examples:
 
 ~~~
+a complete run would be (without F-Droid, Aurora and such):
+
+repo sync -j<processes>
+source build/envsetup.sh
+lunch lineage_<device-model>-<releasetype>
+mka eos
+
+so building the LG H815 without F-Droid etc and 8 sync processes:
+
 repo sync -j8
 source build/envsetup.sh
-breakfast <your-device> (or lunch <your-device_releasetype>)
+lunch lineage_h815-userdebug
+mka eos
+
+doing the same but with F-Droid, etc (when also configured in device's mk):
+
+repo sync -j8
+source build/envsetup.sh
+lunch lineage_h815-userdebug
+vendor/fdroid/get_packages.sh vendor/fdroid
 mka eos
 ~~~
 

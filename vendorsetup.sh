@@ -453,6 +453,10 @@ else
 	sudo update-alternatives --set javac $JAVACBIN
     fi
 fi
+
+# in any case ensure JAVA_HOME is set properly
+export JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:bin/javac::")
+
 echo ">> [$(date)] Using Java JDK $JAVABASE"
 
 

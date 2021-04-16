@@ -355,11 +355,6 @@ MINIMAL_APPS="$EOS_MINI_APPS"
 ############################
 export DEBUG_LOG="$LOGS_DIR/e-${BRANCH_NAME}-${EOS_BUILD_DATE}-${RELEASE_TYPE}-${EOS_DEVICE}.log"
 
-# ensure we get no ccache issues when building
-# for multiple devices and / or android versions
-################################################
-[ "$USE_CCACHE" == "1" ] && CCACHE_DIR="$CCACHE_DIR/$EOS_DEVICE/$BRANCH_NAME"
-
 # Create missing directories
 ############################
 mkdir -p $MIRROR_DIR

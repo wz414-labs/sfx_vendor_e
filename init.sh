@@ -52,6 +52,10 @@ if [ "$SIGN_BUILDS" == "true" ]; then
       echo ">> [$(date)]  Generating $c..."
       ${VENDOR_DIR}/src/make_key "$KEYS_DIR/$c" "$KEYS_SUBJECT" <<< '' &> /dev/null
     done
+    # make readable format for manual verifier
+    echo ">> [$(date)]  Generating releasekey.pub for manual verifying..."
+    openssl rsa -inform DER -outform PEM -in $KEYS_DIR/releasekey.pk8 -out $KEYS_DIR/releasekey.pem
+    openssl rsa -in $KEYS_DIR/releasekey.pem -pubout > $KEYS_DIR/releasekey.pub
   else
     for c in releasekey platform shared media networkstack; do
       for e in pk8 x509.pem; do

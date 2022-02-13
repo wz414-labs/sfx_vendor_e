@@ -188,7 +188,7 @@ OTA_URL="$EOS_OTA_URL"
 # define EOS_GIT_USER_NAME in your device/<vendor>/<codename>/vendorsetup.sh otherwise
 # the global git conf will be used
 [ -z "$EOS_GIT_USER_NAME" ] && \
-USER_NAME=$(git config --global --get user.name)
+USER_NAME="$(git config --global --get user.name)"
 
 # define EOS_GIT_USER_MAIL in your device/<vendor>/<codename>/vendorsetup.sh otherwise
 # the global git conf will be used

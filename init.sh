@@ -42,7 +42,7 @@ if [ "$USE_CCACHE" = 1 ]; then
 fi
 
 # Initialize Git user information
-git config --global user.name $USER_NAME
+git config --global user.name "$USER_NAME"
 git config --global user.email $USER_MAIL
 
 if [ "$SIGN_BUILDS" == "true" ]; then
